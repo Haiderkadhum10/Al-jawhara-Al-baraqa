@@ -1,0 +1,228 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - link "الجوهرة البراقة للـمـنـتـجـات الـغـذائـيـة" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img [ref=e9]
+        - generic [ref=e11]:
+          - generic [ref=e12]: الجوهرة البراقة
+          - generic [ref=e13]: للـمـنـتـجـات الـغـذائـيـة
+      - navigation [ref=e14]:
+        - link "الرئيسية" [ref=e15] [cursor=pointer]:
+          - /url: /
+          - text: الرئيسية
+        - link "المنتجات" [ref=e17] [cursor=pointer]:
+          - /url: /products
+        - link "من نحن" [ref=e18] [cursor=pointer]:
+          - /url: /about
+        - link "تواصل معنا" [ref=e19] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - button "بحث" [ref=e22]:
+            - img
+          - button "حسابي" [ref=e23]:
+            - img
+        - button "سلة التسوق" [ref=e24]:
+          - img
+  - main [ref=e25]:
+    - generic [ref=e27]:
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - img [ref=e34]
+            - generic [ref=e36]: منتجات غذائية فاخرة مستوردة
+          - heading "نكهات العالم بين يديك" [level=1] [ref=e37]:
+            - text: نكهات العالم
+            - generic [ref=e38]: بين يديك
+          - paragraph [ref=e39]: اكتشف روعة المذاق مع مجموعتنا المختارة من أفضل المنتجات الأوروبية والآسيوية. من النودلز الكوري الأصلي إلى العصائر الطبيعية الفاخرة، نأتيك بالجودة العالمية حتى باب منزلك.
+          - generic [ref=e40]:
+            - link "تصفح المنتجات" [ref=e41] [cursor=pointer]:
+              - /url: /products
+              - button "تصفح المنتجات" [ref=e42]:
+                - text: تصفح المنتجات
+                - img
+            - link "من نحن" [ref=e43] [cursor=pointer]:
+              - /url: /about
+              - button "من نحن" [ref=e44]
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - img "User" [ref=e48]
+              - img "User" [ref=e50]
+              - img "User" [ref=e52]
+              - img "User" [ref=e54]
+              - generic [ref=e55]: +2k
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - img [ref=e58]
+                - img [ref=e60]
+                - img [ref=e62]
+                - img [ref=e64]
+                - img [ref=e66]
+              - paragraph [ref=e68]: عملاء يثقون بنا
+        - generic [ref=e71]:
+          - img "منتجات فاخرة" [ref=e72]
+          - generic [ref=e75]:
+            - img [ref=e77]
+            - generic [ref=e79]:
+              - paragraph [ref=e80]: شاهد منتجاتنا
+              - paragraph [ref=e81]: فيديو ترويجي قصير
+      - generic [ref=e83]:
+        - generic [ref=e84]:
+          - heading "لماذا تختار الجوهرة البراقة؟" [level=2] [ref=e85]:
+            - text: لماذا تختار
+            - generic [ref=e86]: الجوهرة البراقة
+            - text: ؟
+          - paragraph [ref=e87]: نحن نلتزم بالتميز في كل تفاصيل تجربة التسوق الخاصة بك
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - img [ref=e92]
+            - heading "منتجات مستوردة" [level=3] [ref=e96]
+            - paragraph [ref=e97]: نختار أفضل المنتجات من أوروبا وآسيا
+          - generic [ref=e98]:
+            - img [ref=e101]
+            - heading "جودة عالية" [level=3] [ref=e104]
+            - paragraph [ref=e105]: جميع منتجاتنا معتمدة وذات جودة فائقة
+          - generic [ref=e106]:
+            - img [ref=e109]
+            - heading "توصيل سريع" [level=3] [ref=e114]
+            - paragraph [ref=e115]: نوصل طلباتك بسرعة وأمان
+          - generic [ref=e116]:
+            - img [ref=e119]
+            - heading "أسعار تنافسية" [level=3] [ref=e121]
+            - paragraph [ref=e122]: أفضل الأسعار مع خدمة متميزة
+      - generic [ref=e124]:
+        - generic [ref=e125]:
+          - generic [ref=e126]:
+            - heading "منتجاتنا المميزة" [level=2] [ref=e127]
+            - paragraph [ref=e128]: مجموعة حصرية من أرقى النكهات العالمية المختارة بعناية لأصحاب الذوق الرفيع.
+          - link "عرض جميع المنتجات" [ref=e130] [cursor=pointer]:
+            - /url: /products
+            - button "عرض جميع المنتجات" [ref=e131]:
+              - text: عرض جميع المنتجات
+              - img
+        - generic [ref=e132]:
+          - generic [ref=e134]:
+            - link "نودلز رامن ياباني نودلز" [ref=e135] [cursor=pointer]:
+              - /url: /products/2ec52780-b178-4e7c-afd3-dc5b6bb738b6
+              - generic [ref=e136]:
+                - img "نودلز رامن ياباني" [ref=e137]
+                - generic [ref=e140]: نودلز
+            - generic [ref=e142]:
+              - link "نودلز رامن ياباني Japanese Ramen Noodles" [ref=e143] [cursor=pointer]:
+                - /url: /products/2ec52780-b178-4e7c-afd3-dc5b6bb738b6
+                - generic [ref=e144]:
+                  - heading "نودلز رامن ياباني" [level=3] [ref=e145]
+                  - paragraph [ref=e146]: Japanese Ramen Noodles
+              - generic [ref=e147]:
+                - generic [ref=e148]:
+                  - img [ref=e149]
+                  - img [ref=e151]
+                  - img [ref=e153]
+                  - img [ref=e155]
+                  - img [ref=e157]
+                  - generic [ref=e159]: "5.0"
+                - generic [ref=e160]:
+                  - generic [ref=e161]: "10000"
+                  - generic [ref=e162]: د.ع
+          - generic [ref=e164]:
+            - link "منتجات أوروبية فاخرة أوروبي" [ref=e165] [cursor=pointer]:
+              - /url: /products/23397e91-2e9f-462e-a738-a674da17a9d4
+              - generic [ref=e166]:
+                - img "منتجات أوروبية فاخرة" [ref=e167]
+                - generic [ref=e170]: أوروبي
+            - generic [ref=e172]:
+              - link "منتجات أوروبية فاخرة European Gourmet" [ref=e173] [cursor=pointer]:
+                - /url: /products/23397e91-2e9f-462e-a738-a674da17a9d4
+                - generic [ref=e174]:
+                  - heading "منتجات أوروبية فاخرة" [level=3] [ref=e175]
+                  - paragraph [ref=e176]: European Gourmet
+              - generic [ref=e177]:
+                - generic [ref=e178]:
+                  - img [ref=e179]
+                  - img [ref=e181]
+                  - img [ref=e183]
+                  - img [ref=e185]
+                  - img [ref=e187]
+                  - generic [ref=e189]: "5.0"
+                - generic [ref=e190]:
+                  - generic [ref=e191]: "15250"
+                  - generic [ref=e192]: د.ع
+      - generic [ref=e197]:
+        - generic [ref=e198]:
+          - heading "انضم إلى عالمنا واحصل على عروض حصرية" [level=2] [ref=e199]:
+            - text: انضم إلى عالمنا
+            - text: واحصل على عروض حصرية
+          - paragraph [ref=e200]: كن أول من يعرف عن منتجاتنا الجديدة وخصوماتنا الحصرية التي تصل إلى 30% للمشتركين فقط.
+          - generic [ref=e201]:
+            - textbox "بريدك الإلكتروني" [ref=e202]
+            - button "اشترك الآن" [ref=e203]
+          - generic [ref=e204]:
+            - img [ref=e205]
+            - text: بياناتك آمنة معنا بنسبة 100%
+        - img "التوصيل" [ref=e209]
+  - contentinfo [ref=e211]:
+    - generic [ref=e213]:
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - link "الجوهرة البراقة" [ref=e216] [cursor=pointer]:
+            - /url: /
+            - img [ref=e218]
+            - generic [ref=e220]: الجوهرة البراقة
+          - paragraph [ref=e221]: وجهتكم الأولى في العراق لأرقى المنتجات الغذائية العالمية المستوردة. نحرص على جلب الجودة والنكهات الأصيلة من قلب أوروبا وآسيا إلى مائدتكم.
+          - generic [ref=e222]:
+            - link [ref=e223] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e224]
+            - link [ref=e227] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e228]
+            - link [ref=e230] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e231]
+        - generic [ref=e233]:
+          - heading "روابط سريعة" [level=3] [ref=e234]: روابط سريعة
+          - list [ref=e236]:
+            - listitem [ref=e237]:
+              - link "الرئيسية" [ref=e238] [cursor=pointer]:
+                - /url: /
+                - text: الرئيسية
+            - listitem [ref=e240]:
+              - link "منتجاتنا" [ref=e241] [cursor=pointer]:
+                - /url: /products
+                - text: منتجاتنا
+            - listitem [ref=e243]:
+              - link "من نحن" [ref=e244] [cursor=pointer]:
+                - /url: /about
+                - text: من نحن
+            - listitem [ref=e246]:
+              - link "تواصل معنا" [ref=e247] [cursor=pointer]:
+                - /url: /contact
+                - text: تواصل معنا
+        - generic [ref=e249]:
+          - heading "معلومات التواصل" [level=3] [ref=e250]: معلومات التواصل
+          - list [ref=e252]:
+            - listitem [ref=e253]:
+              - img [ref=e255]
+              - generic [ref=e258]: بغداد، حي المنصور، العراق
+            - listitem [ref=e259]:
+              - img [ref=e261]
+              - generic [ref=e263]: +964 780 123 4567
+            - listitem [ref=e264]:
+              - img [ref=e266]
+              - generic [ref=e269]: info@shakastore.iq
+        - generic [ref=e270]:
+          - heading "النشرة البريدية" [level=3] [ref=e271]: النشرة البريدية
+          - paragraph [ref=e273]: اشترك للحصول على آخر العروض والمنتجات الجديدة.
+          - generic [ref=e274]:
+            - textbox "بريدك الإلكتروني" [ref=e275]
+            - button "اشتراك" [ref=e276]
+      - generic [ref=e277]:
+        - paragraph [ref=e278]: © 2026 الجوهرة البراقة. جميع الحقوق محفوظة.
+        - button "العودة للأعلى" [ref=e279]:
+          - text: العودة للأعلى
+          - img [ref=e281]
+```
