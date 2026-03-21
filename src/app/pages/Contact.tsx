@@ -71,7 +71,7 @@ export function Contact() {
   };
 
   return (
-    <div className="min-h-screen py-20 overflow-hidden">
+    <div className="min-h-screen py-10 md:py-20 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -89,7 +89,7 @@ export function Contact() {
           </motion.div>
           <motion.h1
             variants={itemVariants}
-            className="text-5xl md:text-7xl font-black tracking-tight"
+            className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight"
           >
             نحن هنا
             <span className="bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] bg-clip-text text-transparent"> لأجلك</span>
@@ -116,7 +116,7 @@ export function Contact() {
                 className="border-border/50 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group rounded-[2rem] bg-card/50 backdrop-blur-sm overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[4rem] group-hover:w-full group-hover:h-full group-hover:rounded-none transition-all duration-500 -z-10" />
-                <CardContent className="p-8 text-center relative z-10">
+                <CardContent className="p-6 lg:p-8 text-center relative z-10">
                   <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#c9a85c]/10 to-[#9d7e3a]/10 mx-auto mb-6 group-hover:scale-110 transition-transform group-hover:shadow-xl group-hover:shadow-primary/20">
                     <info.icon className="w-8 h-8 text-primary" />
                   </div>
@@ -186,7 +186,7 @@ export function Contact() {
                         value={formData.name}
                         onChange={handleChange}
                         placeholder="أدخل اسمك الكامل"
-                        className={`h-14 rounded-2xl border-border/50 bg-background/50 focus:ring-primary/20 transition-all ${errors.name ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
+                        className={`h-12 md:h-14 rounded-2xl border-border/50 bg-background/50 focus:ring-primary/20 transition-all ${errors.name ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
                       />
                       {errors.name && (
                         <p className="text-xs font-bold text-destructive mr-2 mt-1">{errors.name}</p>
@@ -203,7 +203,7 @@ export function Contact() {
                         onChange={handleChange}
                         placeholder="your@email.com"
                         dir="ltr"
-                        className={`h-14 rounded-2xl border-border/50 bg-background/50 focus:ring-primary/20 transition-all ${errors.email ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
+                        className={`h-12 md:h-14 rounded-2xl border-border/50 bg-background/50 focus:ring-primary/20 transition-all ${errors.email ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
                       />
                       {errors.email && (
                         <p className="text-xs font-bold text-destructive mr-2 mt-1 text-right">{errors.email}</p>
@@ -222,7 +222,7 @@ export function Contact() {
                         onChange={handleChange}
                         placeholder="+964 780 ..."
                         dir="ltr"
-                        className={`h-14 rounded-2xl border-border/50 bg-background/50 focus:ring-primary/20 transition-all ${errors.phone ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
+                        className={`h-12 md:h-14 rounded-2xl border-border/50 bg-background/50 focus:ring-primary/20 transition-all ${errors.phone ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
                       />
                     </div>
 
@@ -235,7 +235,7 @@ export function Contact() {
                         value={formData.subject}
                         onChange={handleChange}
                         placeholder="بماذا يمكننا مساعدتك؟"
-                        className={`h-14 rounded-2xl border-border/50 bg-background/50 focus:ring-primary/20 transition-all ${errors.subject ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
+                        className={`h-12 md:h-14 rounded-2xl border-border/50 bg-background/50 focus:ring-primary/20 transition-all ${errors.subject ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
                       />
                       {errors.subject && (
                         <p className="text-xs font-bold text-destructive mr-2 mt-1">{errors.subject}</p>
@@ -262,9 +262,9 @@ export function Contact() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white py-8 rounded-2xl font-black text-lg transition-all shadow-xl shadow-primary/20 group"
+                    className="w-full bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white py-4 md:py-8 rounded-2xl font-black text-base md:text-lg transition-all shadow-xl shadow-primary/20 group"
                   >
-                    <Send className={`w-5 h-5 ml-2 transition-transform ${isSubmitting ? "animate-pulse" : "group-hover:translate-x-1"}`} />
+                    <Send className={`w-4 h-4 md:w-5 md:h-5 ml-2 transition-transform ${isSubmitting ? "animate-pulse" : "group-hover:translate-x-1"}`} />
                     {isSubmitting ? "جاري الإرسال..." : "إرسال الرسالة"}
                   </Button>
                 </form>

@@ -115,7 +115,7 @@ export function ProductDetail() {
                                 <Sparkles className="w-3 h-3 text-primary" />
                                 <span className="text-[10px] font-bold text-primary tracking-widest uppercase">منتج متميز</span>
                             </div>
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight">{product.name}</h1>
+                            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight">{product.name}</h1>
                             <p className="text-xs md:text-sm text-muted-foreground font-medium uppercase tracking-widest">{product.nameEn}</p>
 
                             <div className="flex items-center justify-end gap-3 md:gap-4 py-2">
@@ -133,8 +133,8 @@ export function ProductDetail() {
 
                         <div className="space-y-4 md:space-y-6">
                             <div className="flex items-baseline justify-end gap-2">
-                                <span className="text-lg md:text-xl font-bold text-muted-foreground/60">دينار عراقي</span>
-                                <span className="text-4xl md:text-5xl font-black bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] bg-clip-text text-transparent">
+                                <span className="text-base md:text-xl font-bold text-muted-foreground/60">دينار عراقي</span>
+                                <span className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] bg-clip-text text-transparent">
                                     {product.price}
                                 </span>
                             </div>
@@ -149,17 +149,17 @@ export function ProductDetail() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-10 w-10 md:h-12 md:w-12 rounded-xl"
+                                        className="h-12 w-12 rounded-xl"
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                         disabled={isOutOfStock || availableStock <= 0}
                                     >
                                         <Minus className="w-4 h-4" />
                                     </Button>
-                                    <span className="w-12 text-center font-bold text-lg md:text-xl">{quantity}</span>
+                                    <span className="w-12 text-center font-bold text-lg">{quantity}</span>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-10 w-10 md:h-12 md:w-12 rounded-xl"
+                                        className="h-12 w-12 rounded-xl"
                                         onClick={() => setQuantity(Math.min(quantity + 1, availableStock))}
                                         disabled={isOutOfStock || quantity >= availableStock}
                                     >
@@ -170,7 +170,7 @@ export function ProductDetail() {
                                 <Button
                                     onClick={handleAddToCart}
                                     disabled={isOutOfStock || availableStock <= 0}
-                                    className={`flex-1 w-full py-7 md:py-8 text-base md:text-lg font-bold rounded-2xl shadow-xl transition-all active:scale-[0.98] ${isAdded
+                                    className={`flex-1 w-full py-4 sm:py-7 md:py-8 text-sm sm:text-base md:text-lg font-bold rounded-2xl shadow-xl transition-all active:scale-[0.98] ${isAdded
                                         ? "bg-green-500 hover:bg-green-600 text-white shadow-green-200"
                                         : isOutOfStock || availableStock <= 0
                                             ? "bg-muted hover:bg-muted text-muted-foreground shadow-none cursor-not-allowed"

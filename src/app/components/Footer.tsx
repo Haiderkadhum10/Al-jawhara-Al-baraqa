@@ -23,11 +23,11 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative bg-muted/30 border-t border-border/50 pt-16 md:pt-24 pb-8 md:pb-12 overflow-hidden">
+    <footer className="relative bg-muted/30 border-t border-border/50 pt-10 md:pt-24 pb-8 md:pb-12 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(201,168,92,0.05),transparent_50%)]" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 mb-16 md:mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-16 mb-12 md:mb-20">
           <div className="space-y-6 md:space-y-8 text-center sm:text-right">
             <Link to="/" className="flex items-center justify-center sm:justify-start gap-2 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c9a85c] to-[#9d7e3a] flex items-center justify-center shadow-lg shadow-primary/20 group-hover:rotate-12 transition-transform">

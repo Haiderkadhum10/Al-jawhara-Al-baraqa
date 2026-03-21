@@ -68,13 +68,13 @@ export function Home() {
 
               <motion.div variants={itemVariants} className="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
                 <Link to="/products" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white px-10 py-7 text-lg rounded-2xl shadow-xl shadow-primary/20 group transition-all">
+                  <Button className="w-full sm:w-auto bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white px-8 md:px-10 py-4 sm:py-7 text-base sm:text-lg rounded-2xl shadow-xl shadow-primary/20 group transition-all">
                     تصفح المنتجات
                     <ArrowLeft className="w-5 h-5 mr-2 rotate-180 group-hover:-translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 <Link to="/about" className="w-full sm:w-auto">
-                  <Button variant="outline" className="w-full sm:w-auto border-primary/20 hover:bg-primary/5 px-10 py-7 text-lg rounded-2xl backdrop-blur-sm">
+                  <Button variant="outline" className="w-full sm:w-auto border-primary/20 hover:bg-primary/5 px-8 md:px-10 py-4 sm:py-7 text-base sm:text-lg rounded-2xl backdrop-blur-sm">
                     من نحن
                   </Button>
                 </Link>
@@ -140,7 +140,7 @@ export function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 md:py-24 relative overflow-hidden bg-muted/30">
+      <section className="py-12 md:py-24 relative overflow-hidden bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16 space-y-4">
             <motion.h2
@@ -188,7 +188,7 @@ export function Home() {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-12 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-6">
             <div className="space-y-4 max-w-2xl">
@@ -234,7 +234,7 @@ export function Home() {
               <p className="text-muted-foreground font-bold">جاري تحميل المنتجات...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
               {featuredProducts.map((product) => (
                 <ProductCard key={product.id} {...product} />
               ))}
@@ -244,7 +244,7 @@ export function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 relative overflow-hidden">
+      <section className="py-12 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#c9a85c]/10 via-background to-[#9d7e3a]/10" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div

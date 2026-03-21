@@ -160,7 +160,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex flex-col items-center justify-center gap-6 p-16 text-center"
+                            className="flex flex-col items-center justify-center gap-6 p-8 md:p-16 text-center"
                         >
                             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-2xl shadow-emerald-500/40">
                                 <CheckCircle2 className="w-10 h-10 text-white" />
@@ -173,7 +173,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                     ) : (
                         <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col overflow-hidden">
                             {/* Header */}
-                            <div className="p-6 pb-0">
+                            <div className="p-4 sm:p-6 pb-0">
                                 <DialogHeader>
                                     <DialogTitle className="text-xl font-black text-right flex items-center gap-2">
                                         <ShoppingBag className="w-5 h-5 text-primary" />
@@ -184,7 +184,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                             </div>
 
                             {/* Scrollable form */}
-                            <div className="overflow-y-auto flex-1 px-6 py-4">
+                            <div className="overflow-y-auto flex-1 px-4 sm:px-6 py-4">
                                 <form id="checkout-form" onSubmit={handleSubmit} className="space-y-5">
                                     {/* Full name */}
                                     <div className="space-y-1.5 text-right">
@@ -201,7 +201,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                                 setFullName(e.target.value);
                                                 if (errors.fullName) setErrors({ ...errors, fullName: "" });
                                             }}
-                                            className={`rounded-xl py-5 bg-muted/50 text-right ${errors.fullName ? "border-destructive focus-visible:ring-destructive/20" : "border-border/50"}`}
+                                            className={`rounded-xl h-12 sm:h-14 px-4 bg-muted/50 text-right ${errors.fullName ? "border-destructive focus-visible:ring-destructive/20" : "border-border/50"}`}
                                             dir="rtl"
                                         />
                                         {errors.fullName && <p className="text-xs text-destructive font-bold pr-1">{errors.fullName}</p>}
@@ -223,7 +223,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                                 setPhone(e.target.value);
                                                 if (errors.phone) setErrors({ ...errors, phone: "" });
                                             }}
-                                            className={`rounded-xl py-5 bg-muted/50 text-right ${errors.phone ? "border-destructive focus-visible:ring-destructive/20" : "border-border/50"}`}
+                                            className={`rounded-xl h-12 sm:h-14 px-4 bg-muted/50 text-right ${errors.phone ? "border-destructive focus-visible:ring-destructive/20" : "border-border/50"}`}
                                             dir="rtl"
                                         />
                                         {errors.phone && <p className="text-xs text-destructive font-bold pr-1">{errors.phone}</p>}
@@ -277,7 +277,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                                         setCustomCity(e.target.value);
                                                         if (errors.city) setErrors({ ...errors, city: "" });
                                                     }}
-                                                    className={`rounded-xl py-5 bg-muted/50 text-right ${errors.city ? "border-destructive focus-visible:ring-destructive/20" : "border-border/50"}`}
+                                                    className={`rounded-xl h-12 sm:h-14 px-4 bg-muted/50 text-right ${errors.city ? "border-destructive focus-visible:ring-destructive/20" : "border-border/50"}`}
                                                     dir="rtl"
                                                 />
                                             </div>
@@ -301,7 +301,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                                 setAddress(e.target.value);
                                                 if (errors.address) setErrors({ ...errors, address: "" });
                                             }}
-                                            className={`w-full rounded-xl p-4 bg-muted/50 border resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-right text-sm ${errors.address ? "border-destructive focus:ring-destructive/20" : "border-border/50"}`}
+                                            className={`w-full rounded-xl p-3 sm:p-4 bg-muted/50 border resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-right text-sm ${errors.address ? "border-destructive focus:ring-destructive/20" : "border-border/50"}`}
                                             dir="rtl"
                                         />
                                         {errors.address && <p className="text-xs text-destructive font-bold pr-1">{errors.address}</p>}
@@ -317,7 +317,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                             <button
                                                 type="button"
                                                 onClick={() => setPaymentMethod("cash")}
-                                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${paymentMethod === "cash"
+                                                className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl border-2 transition-all ${paymentMethod === "cash"
                                                     ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                                                     : "border-border/50 bg-muted/30 hover:border-primary/30"
                                                     }`}
@@ -330,7 +330,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                             <button
                                                 type="button"
                                                 onClick={() => setPaymentMethod("wallet")}
-                                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${paymentMethod === "wallet"
+                                                className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl border-2 transition-all ${paymentMethod === "wallet"
                                                     ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                                                     : "border-border/50 bg-muted/30 hover:border-primary/30"
                                                     }`}
@@ -354,7 +354,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                             placeholder="أي تعليمات خاصة للتوصيل..."
                                             value={notes}
                                             onChange={(e) => setNotes(e.target.value)}
-                                            className="w-full rounded-xl p-4 bg-muted/50 border border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-right text-sm"
+                                            className="w-full rounded-xl p-3 sm:p-4 bg-muted/50 border border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-right text-sm"
                                             dir="rtl"
                                         />
                                     </div>
@@ -368,7 +368,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                             </div>
 
                             {/* Sticky footer with breakdown */}
-                            <div className="p-6 border-t border-border/50 bg-background/80 backdrop-blur space-y-4">
+                            <div className="p-4 sm:p-6 border-t border-border/50 bg-background/80 backdrop-blur space-y-4">
                                 <div className="space-y-3 px-2">
                                     <div className="flex items-center justify-between text-sm text-muted-foreground font-bold">
                                         <span>المجموع (المواد)</span>
@@ -390,7 +390,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                     type="submit"
                                     form="checkout-form"
                                     disabled={loading}
-                                    className="w-full bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white py-7 rounded-2xl text-base font-black shadow-xl shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-70"
+                                    className="w-full bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white py-4 sm:py-7 rounded-2xl text-base font-black shadow-xl shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-70"
                                 >
                                     {loading ? (
                                         <span className="flex items-center gap-2">

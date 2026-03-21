@@ -25,9 +25,9 @@ export function About() {
   };
 
   return (
-    <div className="min-h-screen py-20 overflow-hidden">
+    <div className="min-h-screen py-12 md:py-20 overflow-hidden">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-32">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16 md:mb-32">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <motion.div
             initial="hidden"
@@ -45,7 +45,7 @@ export function About() {
 
             <motion.h1
               variants={itemVariants}
-              className="text-5xl md:text-7xl font-black leading-tight tracking-tight"
+              className="text-4xl sm:text-5xl md:text-7xl font-black leading-tight tracking-tight"
             >
               شركة
               <span className="block mt-2 bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] bg-clip-text text-transparent">
@@ -91,7 +91,7 @@ export function About() {
       </section>
 
       {/* Stats Section */}
-      <section className="bg-muted/50 py-24 relative overflow-hidden">
+      <section className="bg-muted/50 py-16 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(201,168,92,0.05),transparent_70%)]" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
@@ -104,7 +104,7 @@ export function About() {
                 transition={{ delay: index * 0.1 }}
                 className="text-center group"
               >
-                <div className="text-5xl md:text-6xl font-black bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] bg-clip-text text-transparent mb-3 group-hover:scale-110 transition-transform">
+                <div className="text-4xl md:text-6xl font-black bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] bg-clip-text text-transparent mb-3 group-hover:scale-110 transition-transform">
                   {stat.number}
                 </div>
                 <div className="text-sm md:text-base text-muted-foreground font-bold tracking-wider uppercase">
@@ -117,7 +117,7 @@ export function About() {
       </section>
 
       {/* Values Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-32">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-32">
         <div className="text-center mb-20 space-y-4">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -169,14 +169,14 @@ export function About() {
       </section>
 
       {/* Mission Section */}
-      <section className="py-32 relative">
+      <section className="py-16 md:py-32 relative">
         <div className="absolute inset-0 bg-gradient-to-br from-[#c9a85c]/5 via-background to-[#9d7e3a]/5" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="max-w-5xl mx-auto rounded-[3rem] overflow-hidden bg-card border border-border/50 shadow-2xl p-12 md:p-20 text-center"
+            className="max-w-5xl mx-auto rounded-[3rem] overflow-hidden bg-card border border-border/50 shadow-2xl p-8 md:p-12 lg:p-20 text-center"
           >
             <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-[#c9a85c] to-[#9d7e3a] mb-12 shadow-xl shadow-primary/20">
               <AboutMissionIcon className="w-12 h-12 text-white" />
