@@ -293,8 +293,14 @@ export function Contact() {
                         بغداد، حي المنصور، العراق
                       </p>
                     </div>
-                    <Button variant="outline" className="rounded-full px-8 border-primary/20 hover:bg-primary/5">
-                      افتح بخرائط جوجل
+                    <Button asChild variant="outline" className="rounded-full px-8 border-primary/20 hover:bg-primary/5">
+                      <a
+                        href="https://maps.google.com/?q=Baghdad+Al+Mansour+Iraq"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        افتح بخرائط جوجل
+                      </a>
                     </Button>
                   </div>
                 </div>

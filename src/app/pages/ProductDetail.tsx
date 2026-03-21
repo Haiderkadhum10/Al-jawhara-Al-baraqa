@@ -6,14 +6,26 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { useProducts } from "../context/ProductContext";
 import { useCart } from "../context/CartContext";
+import { toast } from "sonner";
 
 export function ProductDetail() {
     const { id } = useParams();
-    const { products } = useProducts();
-    const { addToCart } = useCart();
+    const { products, loading } = useProducts();
+    const { items, addToCart } = useCart();
     const product = products.find((p) => p.id === id);
     const [quantity, setQuantity] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-2">جاري تحميل المنتج...</h2>
+                    <p className="text-muted-foreground">يرجى الانتظار قليلاً</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!product) {
         return (
@@ -28,10 +40,23 @@ export function ProductDetail() {
         );
     }
 
+    const isOutOfStock = product.stock === 0;
+    const cartItem = items.find(i => i.id === product.id);
+    const cartQuantity = cartItem?.quantity || 0;
+    const availableStock = (product.stock ?? Infinity) - cartQuantity;
+
     const handleAddToCart = () => {
+        if (availableStock <= 0) return;
         addToCart(product, quantity);
         setIsAdded(true);
         setTimeout(() => setIsAdded(false), 2000);
+        setQuantity(1);
+
+        toast("تمت الإضافة للسلة!", {
+            description: `${product.name} أصبح الآن متوفراً في سلتك`,
+            icon: <ShoppingCart className="w-5 h-5 text-white" />,
+            className: "bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white border-transparent shadow-xl shadow-[#c9a85c]/30 [&>div>div:last-child]:text-white/80",
+        });
     };
 
     const features = [
@@ -126,6 +151,7 @@ export function ProductDetail() {
                                         size="icon"
                                         className="h-10 w-10 md:h-12 md:w-12 rounded-xl"
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        disabled={isOutOfStock || availableStock <= 0}
                                     >
                                         <Minus className="w-4 h-4" />
                                     </Button>
@@ -134,7 +160,8 @@ export function ProductDetail() {
                                         variant="ghost"
                                         size="icon"
                                         className="h-10 w-10 md:h-12 md:w-12 rounded-xl"
-                                        onClick={() => setQuantity(quantity + 1)}
+                                        onClick={() => setQuantity(Math.min(quantity + 1, availableStock))}
+                                        disabled={isOutOfStock || quantity >= availableStock}
                                     >
                                         <Plus className="w-4 h-4" />
                                     </Button>
@@ -142,9 +169,12 @@ export function ProductDetail() {
 
                                 <Button
                                     onClick={handleAddToCart}
+                                    disabled={isOutOfStock || availableStock <= 0}
                                     className={`flex-1 w-full py-7 md:py-8 text-base md:text-lg font-bold rounded-2xl shadow-xl transition-all active:scale-[0.98] ${isAdded
                                         ? "bg-green-500 hover:bg-green-600 text-white shadow-green-200"
-                                        : "bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white shadow-primary/20"
+                                        : isOutOfStock || availableStock <= 0
+                                            ? "bg-muted hover:bg-muted text-muted-foreground shadow-none cursor-not-allowed"
+                                            : "bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white shadow-primary/20"
                                         }`}
                                 >
                                     <AnimatePresence mode="wait">
@@ -168,7 +198,7 @@ export function ProductDetail() {
                                                 className="flex items-center"
                                             >
                                                 <ShoppingCart className="w-5 h-5 ml-3" />
-                                                أضف إلى السلة
+                                                {isOutOfStock ? 'نفدت الكمية' : availableStock <= 0 ? 'الحد الأقصى' : 'أضف إلى السلة'}
                                             </motion.div>
                                         )}
                                     </AnimatePresence>

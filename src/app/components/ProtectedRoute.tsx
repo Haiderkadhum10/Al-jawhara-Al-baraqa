@@ -9,6 +9,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 }
 
 export function ProtectedDashboard() {
-    const { isAuthenticated } = useAuth();
-    return isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />;
+    const { isAuthenticated, isAdmin } = useAuth();
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    return isAdmin ? <Dashboard /> : <Navigate to="/" replace />;
 }

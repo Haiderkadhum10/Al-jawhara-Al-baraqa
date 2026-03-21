@@ -25,7 +25,7 @@ import {
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useProducts } from "../../context/ProductContext";
-import { supabase } from "@/lib/supabase";
+import { addProduct, updateProduct, deleteProductByStatus, permanentlyDeleteProduct, deleteCategoryAndProducts } from "@/lib/services/productsService";
 import {
   Select,
   SelectContent,
@@ -45,7 +45,7 @@ import {
 } from "../ui/alert-dialog";
 
 export function DashboardProducts() {
-  const { products, loading, refreshProducts } = useProducts();
+  const { allProducts, loading, refreshProducts } = useProducts();
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("edit");
@@ -79,21 +79,21 @@ export function DashboardProducts() {
   const PAGE_SIZE = 12;
 
   const activeProducts = useMemo(
-    () => products.filter((p: any) => p.status === 'active' || !p.status),
-    [products],
+    () => allProducts.filter((p: any) => p.status === 'active'),
+    [allProducts],
   );
   const archivedProducts = useMemo(
-    () => products.filter((p: any) => p.status === 'archived'),
-    [products],
+    () => allProducts.filter((p: any) => p.status === 'archived'),
+    [allProducts],
   );
   const deletedProducts = useMemo(
-    () => products.filter((p: any) => p.status === 'deleted'),
-    [products],
+    () => allProducts.filter((p: any) => p.status === 'deleted'),
+    [allProducts],
   );
 
   const categories = useMemo(
-    () => Array.from(new Set(products.map((p: any) => p.category))).filter(Boolean),
-    [products],
+    () => Array.from(new Set(allProducts.map((p: any) => p.category))).filter(Boolean),
+    [allProducts],
   );
 
   const filteredProducts = useMemo(() => {
@@ -112,7 +112,7 @@ export function DashboardProducts() {
   }, [filteredProducts, currentPage, PAGE_SIZE]);
 
   const handleDelete = (id: string) => {
-    const product = products.find(p => p.id === id);
+    const product = allProducts.find(p => p.id === id);
     if (!product) return;
 
     setConfirmConfig({
@@ -122,57 +122,45 @@ export function DashboardProducts() {
       actionLabel: "نقل لسجل المحذوفات",
       variant: "destructive",
       onConfirm: async () => {
-        const { error } = await supabase
-          .from('products')
-          .update({ status: 'deleted' })
-          .eq('id', id);
-
-        if (error) {
-          showToast(`فشل الحذف: ${error.message}`, "error");
-        } else {
+        try {
+          await deleteProductByStatus(id, "deleted");
           showToast(`تم نقل "${product.name}" إلى سلة المحذوفات`, "info");
           refreshProducts();
+        } catch (error: any) {
+          showToast(`فشل الحذف: ${error.message}`, "error");
         }
       }
     });
   };
 
   const handleArchive = async (id: string) => {
-    const product = products.find(p => p.id === id);
+    const product = allProducts.find(p => p.id === id);
     if (product) {
-      const { error } = await supabase
-        .from('products')
-        .update({ status: 'archived' })
-        .eq('id', id);
-
-      if (error) {
-        showToast(`فشلت الأرشفة: ${error.message}`, "error");
-      } else {
+      try {
+        await deleteProductByStatus(id, "archived");
         showToast(`تمت أرشفة "${product.name}" بنجاح`, "success");
         refreshProducts();
+      } catch (error: any) {
+        showToast(`فشلت الأرشفة: ${error.message}`, "error");
       }
     }
   };
 
   const handleRestore = async (id: string) => {
-    const product = products.find(p => p.id === id);
+    const product = allProducts.find(p => p.id === id);
     if (product) {
-      const { error } = await supabase
-        .from('products')
-        .update({ status: 'active' })
-        .eq('id', id);
-
-      if (error) {
-        showToast(`فشلت الاستعادة: ${error.message}`, "error");
-      } else {
+      try {
+        await deleteProductByStatus(id, "active");
         showToast(`تمت استعادة "${product.name}" إلى المتجر`, "success");
         refreshProducts();
+      } catch (error: any) {
+        showToast(`فشلت الاستعادة: ${error.message}`, "error");
       }
     }
   };
 
   const handlePermanentDelete = (id: string) => {
-    const product = products.find(p => p.id === id);
+    const product = allProducts.find(p => p.id === id);
     if (!product) return;
 
     setConfirmConfig({
@@ -182,16 +170,12 @@ export function DashboardProducts() {
       actionLabel: "حذف للأبد",
       variant: "destructive",
       onConfirm: async () => {
-        const { error } = await supabase
-          .from('products')
-          .delete()
-          .eq('id', id);
-
-        if (error) {
-          showToast(`فشل الحذف النهائي: ${error.message}`, "error");
-        } else {
+        try {
+          await permanentlyDeleteProduct(id);
           showToast(`تم حذف "${product.name}" نهائياً`, "error");
           refreshProducts();
+        } catch (error: any) {
+          showToast(`فشل الحذف النهائي: ${error.message}`, "error");
         }
       }
     });
@@ -206,7 +190,8 @@ export function DashboardProducts() {
       image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000",
       rating: 5,
       category: "",
-      status: "active"
+      status: "active",
+      stock: 10
     });
     setDialogMode("add");
     setIsAddingNewCategory(false);
@@ -222,27 +207,20 @@ export function DashboardProducts() {
     const productToSave = { ...editingProduct, category: finalCategory };
 
     if (dialogMode === "add") {
-      const { error } = await supabase
-        .from('products')
-        .insert([productToSave]);
-
-      if (error) {
-        showToast(`فشلت الإضافة: ${error.message}`, "error");
-      } else {
+      try {
+        await addProduct(productToSave);
         showToast(`تمت إضافة "${productToSave.name}" بنجاح`, "success");
         refreshProducts();
+      } catch (error: any) {
+        showToast(`فشلت الإضافة: ${error.message}`, "error");
       }
     } else {
-      const { error } = await supabase
-        .from('products')
-        .update(productToSave)
-        .eq('id', editingProduct.id);
-
-      if (error) {
-        showToast(`فشل التحديث: ${error.message}`, "error");
-      } else {
+      try {
+        await updateProduct(editingProduct.id, productToSave);
         showToast(`تم تحديث "${productToSave.name}" بنجاح`, "success");
         refreshProducts();
+      } catch (error: any) {
+        showToast(`فشل التحديث: ${error.message}`, "error");
       }
     }
     setIsDialogOpen(false);
@@ -256,16 +234,12 @@ export function DashboardProducts() {
       actionLabel: "حذف الفئة والمنتجات",
       variant: "destructive",
       onConfirm: async () => {
-        const { error } = await supabase
-          .from('products')
-          .delete()
-          .eq('category', category);
-
-        if (error) {
-          showToast(`فشل حذف الفئة: ${error.message}`, "error");
-        } else {
+        try {
+          await deleteCategoryAndProducts(category);
           showToast(`تم حذف فئة "${category}" ومنتجاتها بنجاح`, "info");
           refreshProducts();
+        } catch (error: any) {
+          showToast(`فشل حذف الفئة: ${error.message}`, "error");
         }
       }
     });
@@ -450,134 +424,150 @@ export function DashboardProducts() {
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] rounded-[2rem] p-8">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-right">
-              {dialogMode === "add" ? "إضافة منتج جديد" : "تعديل المنتج"}
-            </DialogTitle>
-          </DialogHeader>
-          {editingProduct && (
-            <form onSubmit={handleSave} className="space-y-6 pt-6">
-              <div className="flex flex-col items-center gap-4 mb-6">
-                <input
-                  type="file"
-                  id="imageUpload"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-                <Label htmlFor="imageUpload" className="relative cursor-pointer group">
-                  <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-dashed border-primary/20 group-hover:border-primary/50 transition-all shadow-xl">
-                    <img src={editingProduct.image} className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ImageIcon className="text-primary w-8 h-8" />
+        <DialogContent className="sm:max-w-[600px] rounded-[2rem] p-0 overflow-hidden max-h-[90vh] flex flex-col">
+          <div className="p-8 overflow-y-auto flex-1">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black text-right">
+                {dialogMode === "add" ? "إضافة منتج جديد" : "تعديل المنتج"}
+              </DialogTitle>
+            </DialogHeader>
+            {editingProduct && (
+              <form id="product-form" onSubmit={handleSave} className="space-y-6 pt-6">
+                <div className="flex flex-col items-center gap-4 mb-6">
+                  <input
+                    type="file"
+                    id="imageUpload"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                  <Label htmlFor="imageUpload" className="relative cursor-pointer group">
+                    <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-dashed border-primary/20 group-hover:border-primary/50 transition-all shadow-xl">
+                      <img src={editingProduct.image} className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ImageIcon className="text-primary w-8 h-8" />
+                      </div>
                     </div>
+                  </Label>
+                  <Label htmlFor="imageUpload" className="text-xs font-bold text-primary cursor-pointer hover:underline">
+                    تغيير صورة المنتج من الجهاز
+                  </Label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2 text-right">
+                    <Label className="font-bold">اسم المنتج (عربي)</Label>
+                    <Input
+                      required
+                      value={editingProduct.name}
+                      onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, name: e.target.value }))}
+                      className="rounded-xl py-6 bg-muted/50 border-border/50 rtl"
+                    />
                   </div>
-                </Label>
-                <Label htmlFor="imageUpload" className="text-xs font-bold text-primary cursor-pointer hover:underline">
-                  تغيير صورة المنتج من الجهاز
-                </Label>
-              </div>
+                  <div className="space-y-2 text-right">
+                    <Label className="font-bold">اسم المنتج (English)</Label>
+                    <Input
+                      required
+                      value={editingProduct.nameEn}
+                      onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, nameEn: e.target.value }))}
+                      className="rounded-xl py-6 bg-muted/50 border-border/50 ltr"
+                    />
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2 text-right">
-                  <Label className="font-bold">اسم المنتج (عربي)</Label>
-                  <Input
-                    required
-                    value={editingProduct.name}
-                    onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, name: e.target.value }))}
-                    className="rounded-xl py-6 bg-muted/50 border-border/50 rtl"
-                  />
-                </div>
-                <div className="space-y-2 text-right">
-                  <Label className="font-bold">اسم المنتج (English)</Label>
-                  <Input
-                    required
-                    value={editingProduct.nameEn}
-                    onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, nameEn: e.target.value }))}
-                    className="rounded-xl py-6 bg-muted/50 border-border/50 ltr"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2 text-right">
-                  <Label className="font-bold">السعر (د.ع)</Label>
-                  <Input
-                    required
-                    value={editingProduct.price}
-                    onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, price: e.target.value }))}
-                    className="rounded-xl py-6 bg-muted/50 border-border/50"
-                  />
-                </div>
-                <div className="space-y-2 text-right">
-                  <Label className="font-bold">الفئة</Label>
-                  <Select
-                    value={isAddingNewCategory ? "new" : editingProduct.category}
-                    onValueChange={(value) => {
-                      if (value === "new") {
-                        setIsAddingNewCategory(true);
-                      } else {
-                        setIsAddingNewCategory(false);
-                        setEditingProduct((prev: any) => ({ ...prev, category: value }));
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="rounded-xl py-6 bg-muted/50 border-border/50 text-right h-auto">
-                      <SelectValue placeholder="اختر الفئة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2 text-right">
+                    <Label className="font-bold">السعر (د.ع)</Label>
+                    <Input
+                      required
+                      value={editingProduct.price}
+                      onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, price: e.target.value }))}
+                      className="rounded-xl py-6 bg-muted/50 border-border/50"
+                    />
+                  </div>
+                  <div className="space-y-2 text-right">
+                    <Label className="font-bold">الفئة</Label>
+                    <Select
+                      value={isAddingNewCategory ? "new" : editingProduct.category}
+                      onValueChange={(value) => {
+                        if (value === "new") {
+                          setIsAddingNewCategory(true);
+                        } else {
+                          setIsAddingNewCategory(false);
+                          setEditingProduct((prev: any) => ({ ...prev, category: value }));
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="rounded-xl py-6 bg-muted/50 border-border/50 text-right h-auto">
+                        <SelectValue placeholder="اختر الفئة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="new" className="text-primary font-bold">
+                          + إضافة فئة جديدة...
                         </SelectItem>
-                      ))}
-                      <SelectItem value="new" className="text-primary font-bold">
-                        + إضافة فئة جديدة...
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
 
-              {isAddingNewCategory && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="space-y-2 text-right"
-                >
-                  <Label className="font-bold">اسم الفئة الجديدة</Label>
+                <div className="space-y-2 text-right">
+                  <Label className="font-bold">الكمية المتوفرة (المخزون)</Label>
                   <Input
                     required
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="أدخل اسم الفئة الجديدة..."
-                    className="rounded-xl py-6 bg-muted/50 border-border/50"
+                    type="number"
+                    min="0"
+                    value={editingProduct.stock !== undefined ? editingProduct.stock : 10}
+                    onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
+                    className="rounded-xl py-6 bg-muted/50 border-border/50 text-right"
                   />
-                </motion.div>
-              )}
+                </div>
 
-              <div className="space-y-2 text-right">
-                <Label className="font-bold">وصف المنتج</Label>
-                <textarea
-                  required
-                  rows={3}
-                  value={editingProduct.description}
-                  onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, description: e.target.value }))}
-                  className="w-full rounded-xl p-4 bg-muted/50 border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
+                {isAddingNewCategory && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="space-y-2 text-right"
+                  >
+                    <Label className="font-bold">اسم الفئة الجديدة</Label>
+                    <Input
+                      required
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="أدخل اسم الفئة الجديدة..."
+                      className="rounded-xl py-6 bg-muted/50 border-border/50"
+                    />
+                  </motion.div>
+                )}
 
-              <DialogFooter className="flex-row-reverse gap-4 pt-6">
-                <Button type="submit" className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold shadow-lg shadow-primary/20">
-                  <Check className="w-5 h-5 ml-2" />
-                  {dialogMode === "add" ? "إضافة المنتج" : "حفظ التغييرات"}
-                </Button>
-                <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="flex-1 py-6 rounded-2xl font-bold">
-                  إلغاء
-                </Button>
-              </DialogFooter>
-            </form>
+                <div className="space-y-2 text-right">
+                  <Label className="font-bold">وصف المنتج</Label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={editingProduct.description}
+                    onChange={(e) => setEditingProduct((prev: any) => ({ ...prev, description: e.target.value }))}
+                    className="w-full rounded-xl p-4 bg-muted/50 border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+              </form>
+            )}
+          </div>
+          {editingProduct && (
+            <div className="p-6 border-t border-border/50 bg-background flex flex-row-reverse gap-4">
+              <Button type="submit" form="product-form" className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold shadow-lg shadow-primary/20">
+                <Check className="w-5 h-5 ml-2" />
+                {dialogMode === "add" ? "إضافة المنتج" : "حفظ التغييرات"}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="flex-1 py-6 rounded-2xl font-bold">
+                إلغاء
+              </Button>
+            </div>
           )}
         </DialogContent>
       </Dialog>

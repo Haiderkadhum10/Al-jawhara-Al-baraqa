@@ -123,20 +123,18 @@ export function Products() {
           <AnimatePresence mode="popLayout">
             {filteredProducts.length > 0 ? (
               <motion.div
-                layout
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"
+                className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 md:gap-8"
               >
                 {filteredProducts.map((product) => (
                   <motion.div
-                    layout
                     key={product.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <ProductCard {...product} />
                   </motion.div>

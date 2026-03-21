@@ -3,17 +3,9 @@ import { motion } from "framer-motion";
 
 import { Search, UserPlus, Mail, Phone, ShoppingBag, MoreVertical } from "lucide-react";
 import { Button } from "../ui/button";
-import { supabase } from "@/lib/supabase";
+import { fetchCustomerStats, DashboardCustomer } from "@/lib/services/customersService";
 import { formatPrice } from "@/lib/utils";
-
-interface DashboardCustomer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  ordersCount: number;
-  spent: number;
-}
+import { logger } from "@/lib/logger";
 
 export function DashboardCustomers() {
   const [customers, setCustomers] = useState<DashboardCustomer[]>([]);
@@ -24,35 +16,11 @@ export function DashboardCustomers() {
 
   useEffect(() => {
     const loadCustomers = async () => {
-      setLoading(true);
       try {
-        // استخدام view مجمّع من قاعدة البيانات لتحسين الأداء
-        const { data, error } = await supabase
-          .from("customer_stats")
-          .select("id, full_name, email, phone, orders_count, total_spent")
-          .limit(200);
-
-        if (error || !data) {
-          // eslint-disable-next-line no-console
-          console.error("Error fetching customers from Supabase", error);
-          setCustomers([]);
-          setLoading(false);
-          return;
-        }
-
-        const mapped: DashboardCustomer[] = data.map((row: any) => ({
-          id: row.id,
-          name: row.full_name ?? "عميل بدون اسم",
-          email: row.email ?? "",
-          phone: row.phone ?? "",
-          ordersCount: Number(row.orders_count ?? 0),
-          spent: Number(row.total_spent ?? 0),
-        }));
-
-        setCustomers(mapped);
+        const stats = await fetchCustomerStats(200);
+        setCustomers(stats);
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error("Unexpected error loading customers", err);
+        logger.error("Unexpected error loading customers", err, { feature: "dashboard", action: "loadCustomers" });
         setCustomers([]);
       } finally {
         setLoading(false);

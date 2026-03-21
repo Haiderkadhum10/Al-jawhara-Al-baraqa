@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -17,12 +17,23 @@ import {
   Sheet,
   SheetContent,
 } from "../components/ui/sheet";
-import { DashboardOverview } from "../components/dashboard/DashboardOverview";
-import { DashboardProducts } from "../components/dashboard/DashboardProducts";
-import { DashboardOrders } from "../components/dashboard/DashboardOrders";
-import { DashboardCustomers } from "../components/dashboard/DashboardCustomers";
-import { DashboardSettings } from "../components/dashboard/DashboardSettings";
 import { useAuth } from "../context/AuthContext";
+
+const DashboardOverview = lazy(async () => ({
+  default: (await import("../components/dashboard/DashboardOverview")).DashboardOverview,
+}));
+const DashboardProducts = lazy(async () => ({
+  default: (await import("../components/dashboard/DashboardProducts")).DashboardProducts,
+}));
+const DashboardOrders = lazy(async () => ({
+  default: (await import("../components/dashboard/DashboardOrders")).DashboardOrders,
+}));
+const DashboardCustomers = lazy(async () => ({
+  default: (await import("../components/dashboard/DashboardCustomers")).DashboardCustomers,
+}));
+const DashboardSettings = lazy(async () => ({
+  default: (await import("../components/dashboard/DashboardSettings")).DashboardSettings,
+}));
 
 const menuItems = [
   { id: "overview", label: "نظرة عامة", icon: LayoutDashboard },
@@ -131,7 +142,7 @@ export function Dashboard() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
-            {activeTab !== "products" && (
+            {activeTab !== "products" && activeTab !== "customers" && (
               <div className="relative hidden md:block w-48 lg:w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -156,11 +167,13 @@ export function Dashboard() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              {activeTab === "overview" && <DashboardOverview />}
-              {activeTab === "products" && <DashboardProducts />}
-              {activeTab === "orders" && <DashboardOrders />}
-              {activeTab === "customers" && <DashboardCustomers />}
-              {activeTab === "settings" && <DashboardSettings />}
+              <Suspense fallback={<div className="text-center py-8 text-muted-foreground">جاري تحميل القسم...</div>}>
+                {activeTab === "overview" && <DashboardOverview />}
+                {activeTab === "products" && <DashboardProducts />}
+                {activeTab === "orders" && <DashboardOrders />}
+                {activeTab === "customers" && <DashboardCustomers />}
+                {activeTab === "settings" && <DashboardSettings />}
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </div>

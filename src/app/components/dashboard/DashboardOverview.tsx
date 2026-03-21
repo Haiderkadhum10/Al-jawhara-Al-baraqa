@@ -1,4 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { fetchDashboardOverviewStats } from "@/lib/services/ordersService";
+import { formatPrice } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Users, Package, Wallet, ShoppingCart } from "lucide-react";
 import {
@@ -19,7 +22,7 @@ import {
 } from "recharts";
 import { useProducts } from "../../context/ProductContext";
 
-const data = [
+const dummyData = [
   { name: "يناير", sales: 4000, orders: 240 },
   { name: "فبراير", sales: 3000, orders: 198 },
   { name: "مارس", sales: 2000, orders: 150 },
@@ -33,6 +36,59 @@ const COLORS = ["#c9a85c", "#9d7e3a", "#45B39D", "#5499C7", "#9B59B6", "#E67E22"
 
 export function DashboardOverview() {
   const { products } = useProducts();
+  
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    newOrders: 0,
+    activeCustomers: 0,
+    totalProducts: 0,
+  });
+  const [chartData, setChartData] = useState<any[]>(dummyData);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const dbStats = await fetchDashboardOverviewStats();
+      if (dbStats) {
+        const { orders: completedOrders, totalSales, newOrders, customersCount } = dbStats;
+
+        // Group sales by month for chart (last 7 months)
+        const monthsInArabic = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+        const monthlyData = new Map();
+        
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const key = `${d.getFullYear()}-${d.getMonth()}`;
+            monthlyData.set(key, { name: monthsInArabic[d.getMonth()], sales: 0, orders: 0, year: d.getFullYear(), month: d.getMonth() });
+        }
+
+        completedOrders.forEach((o: any) => {
+            const d = new Date(o.created_at);
+            const key = `${d.getFullYear()}-${d.getMonth()}`;
+            if (monthlyData.has(key)) {
+                const item = monthlyData.get(key);
+                item.sales += Number(o.total_amount || 0);
+                item.orders += 1;
+            }
+        });
+
+        const sortedChartData = Array.from(monthlyData.values()).sort((a, b) => {
+            if (a.year !== b.year) return a.year - b.year;
+            return a.month - b.month;
+        });
+
+        setChartData(sortedChartData);
+        setStats({
+          totalSales,
+          newOrders,
+          activeCustomers: customersCount,
+          totalProducts: products.length
+        });
+      }
+    };
+
+    fetchStats();
+  }, [products]);
 
   const categoryStats = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -52,10 +108,10 @@ export function DashboardOverview() {
       {/* KPI Cards */}
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <StatCard title="إجمالي المبيعات" value="١٥,٤٣٠,٠٠٠ د.ع" change="+١٢٪" icon={Wallet} trend="up" />
-        <StatCard title="الطلبات الجديدة" value="٨٤" change="+٥٪" icon={ShoppingCart} trend="up" />
-        <StatCard title="العملاء النشطون" value="١,٢٠٠" change="-٢٪" icon={Users} trend="down" />
-        <StatCard title="إجمالي المنتجات" value="١٥٦" change="+٤" icon={Package} trend="up" />
+        <StatCard title="إجمالي المبيعات" value={`${formatPrice(stats.totalSales)} د.ع`} change="+١٢.٥٪" icon={Wallet} trend="up" />
+        <StatCard title="الطلبات قيد الانتظار" value={stats.newOrders.toString()} change="+٣ طلبات" icon={ShoppingCart} trend="up" />
+        <StatCard title="إجمالي العملاء" value={stats.activeCustomers.toString()} change="+١٠٠٪" icon={Users} trend="up" />
+        <StatCard title="إجمالي المنتجات" value={stats.totalProducts.toString()} change="نشط" icon={Package} trend="up" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -72,7 +128,7 @@ export function DashboardOverview() {
           </div>
           <div className="h-64 md:h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
+              <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#c9a85c" stopOpacity={0.3} />
@@ -152,19 +208,24 @@ export function DashboardOverview() {
 
 function StatCard({ title, value, change, icon: Icon, trend }: any) {
   return (
-    <div className="bg-card p-5 md:p-6 rounded-3xl border border-border/50 shadow-sm hover:shadow-md transition-all group">
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-muted group-hover:bg-primary/10 transition-colors flex items-center justify-center">
-          <Icon className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+    <div className="bg-gradient-to-br from-card to-muted/20 p-5 md:p-6 rounded-[2rem] border border-border/40 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 group relative overflow-hidden">
+      {/* Subtle background decoration */}
+      <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+      
+      <div className="flex items-start justify-between mb-4 relative z-10">
+        <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-border/50 group-hover:border-primary/30 transition-all duration-500 flex items-center justify-center">
+          <Icon className="w-6 h-6 text-primary" />
         </div>
-        <div className={`flex items-center gap-1 text-[10px] md:text-xs font-bold px-2 py-1 rounded-lg ${trend === "up" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
-          {trend === "up" ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+        <div className={`flex items-center gap-1.5 text-[10px] md:text-xs font-black px-2.5 py-1.5 rounded-xl ${
+          trend === "up" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
+        }`}>
+          <TrendingUp className="w-3.5 h-3.5" />
           {change}
         </div>
       </div>
-      <div className="text-right">
-        <p className="text-xs md:text-sm text-muted-foreground font-medium mb-1">{title}</p>
-        <p className="text-xl md:text-2xl font-black truncate">{value}</p>
+      <div className="text-right relative z-10">
+        <p className="text-xs md:text-sm text-muted-foreground font-bold mb-1 opacity-80">{title}</p>
+        <p className="text-2xl md:text-3xl font-black tracking-tight text-foreground">{value}</p>
       </div>
     </div>
   );

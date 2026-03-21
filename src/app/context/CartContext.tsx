@@ -10,7 +10,7 @@ interface CartContextType {
     items: CartItem[];
     addToCart: (product: Product, quantity: number) => void;
     removeFromCart: (productId: string) => void;
-    updateQuantity: (productId: string, quantity: number) => void;
+    updateQuantity: (productId: string, quantity: number, maxStock?: number) => void;
     clearCart: () => void;
     totalItems: number;
     totalPrice: number;
@@ -21,7 +21,18 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>(() => {
         const saved = localStorage.getItem("shaka_cart");
-        return saved ? JSON.parse(saved) : [];
+        if (!saved) return [];
+        try {
+            const parsed = JSON.parse(saved);
+            // تصفية العناصر التي تحمل معرفات قديمة (ليست UUID) لتجنب أخطاء الداتابيس
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            return Array.isArray(parsed) 
+                ? parsed.filter((item: any) => uuidRegex.test(item.id))
+                : [];
+        } catch (e) {
+            console.error("Error parsing cart:", e);
+            return [];
+        }
     });
 
     useEffect(() => {
@@ -33,14 +44,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const addToCart = (product: Product, quantity: number) => {
         setItems((prev) => {
             const existing = prev.find((item) => item.id === product.id);
+            const available = product.stock ?? Infinity;
+
             if (existing) {
+                const newQuantity = Math.min(existing.quantity + quantity, available);
                 return prev.map((item) =>
                     item.id === product.id
-                        ? { ...item, quantity: item.quantity + quantity }
+                        ? { ...item, quantity: newQuantity, stock: available }
                         : item
                 );
             }
-            return [...prev, { ...product, quantity }];
+            const initialQuantity = Math.min(quantity, available);
+            return [...prev, { ...product, quantity: initialQuantity }];
         });
     };
 
@@ -48,12 +63,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems((prev) => prev.filter((item) => item.id !== productId));
     };
 
-    const updateQuantity = (productId: string, quantity: number) => {
+    const updateQuantity = (productId: string, quantity: number, maxStock?: number) => {
         if (quantity < 1) return;
         setItems((prev) =>
-            prev.map((item) =>
-                item.id === productId ? { ...item, quantity } : item
-            )
+            prev.map((item) => {
+                if (item.id === productId) {
+                    const available = maxStock ?? item.stock ?? Infinity;
+                    const safeQuantity = Math.min(quantity, available);
+                    return { ...item, quantity: safeQuantity, stock: available };
+                }
+                return item;
+            })
         );
     };
 

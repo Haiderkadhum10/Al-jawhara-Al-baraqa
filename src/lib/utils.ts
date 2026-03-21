@@ -12,6 +12,8 @@ export function formatPrice(price: number): string {
   return new Intl.NumberFormat("ar-IQ").format(price);
 }
 
-export function parsePrice(priceStr: string): number {
-  return Number(priceStr.replace(/[^0-9.-]+/g, ""));
+export function parsePrice(priceVal: string | number): number {
+  if (typeof priceVal === 'number') return priceVal;
+  if (!priceVal) return 0;
+  return Number(String(priceVal).replace(/[^0-9.-]+/g, ""));
 }

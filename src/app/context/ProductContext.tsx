@@ -2,46 +2,49 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import type { Product } from "@/types/product";
 import { products as staticProducts } from "@/lib/data/products";
 import { supabase } from "@/lib/supabase";
+import { fetchAllProducts } from "@/lib/services/productsService";
+import { logger } from "@/lib/logger";
 
 interface ProductContextType {
     products: Product[];
+    allProducts: Product[];
     loading: boolean;
     refreshProducts: () => Promise<void>;
+    updateStock: (purchasedItems: { id: string, quantity: number }[]) => void;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export function ProductProvider({ children }: { children: React.ReactNode }) {
-    const [products, setProducts] = useState<Product[]>([]);
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from("products")
-                .select("id, name, nameEn, price, image, category, description, rating, status, created_at")
-                .eq("status", "active")
-                .order("created_at", { ascending: false })
-                .limit(100);
-
-            if (error) {
-                // eslint-disable-next-line no-console
-                console.error("Error fetching products from Supabase:", error);
-                setProducts(staticProducts);
-            } else if (data && data.length > 0) {
-                setProducts(data as Product[]);
-            } else {
-                setProducts(staticProducts);
-            }
+            const data = await fetchAllProducts(1000);
+            setAllProducts(data || []);
         } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error("Unexpected error fetching products:", err);
-            setProducts(staticProducts);
+            logger.error("Unexpected error fetching products", err, { feature: "products", action: "contextFetch" });
+            setAllProducts([]);
         } finally {
             setLoading(false);
         }
     };
+
+    const updateStock = (purchasedItems: { id: string, quantity: number }[]) => {
+        setAllProducts(prevProducts => prevProducts.map(p => {
+            const purchased = purchasedItems.find(item => item.id === p.id);
+            if (purchased && p.stock !== undefined) {
+                return { ...p, stock: Math.max(0, p.stock - purchased.quantity) };
+            }
+            return p;
+        }));
+    };
+
+    const activeProducts = React.useMemo(() => {
+        return allProducts.filter(p => !p.status || p.status === 'active');
+    }, [allProducts]);
 
     useEffect(() => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -51,9 +54,11 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     return (
         <ProductContext.Provider
             value={{
-                products,
+                products: activeProducts,
+                allProducts,
                 loading,
                 refreshProducts: fetchProducts,
+                updateStock,
             }}
         >
             {children}

@@ -11,6 +11,8 @@ export interface Product {
   category: string;
   featured?: boolean;
   created_at?: string;
+  stock?: number;
+  status?: "active" | "archived" | "deleted";
 }
 
 export interface FeatureItem {
