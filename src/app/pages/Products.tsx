@@ -103,8 +103,8 @@ export function Products() {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`flex-shrink-0 px-6 md:px-8 py-2.5 md:py-3 rounded-2xl text-sm md:text-base font-bold transition-all duration-300 border ${selectedCategory === category
-                ? "bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white border-transparent shadow-lg shadow-primary/20 scale-105"
+              className={`flex-shrink-0 px-4 md:px-8 py-2 md:py-3 rounded-[1rem] md:rounded-2xl text-[13px] md:text-base font-bold transition-all duration-300 border ${selectedCategory === category
+                ? "bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white border-transparent shadow-lg shadow-primary/20 md:scale-105"
                 : "bg-card/50 text-muted-foreground border-border/50 hover:border-primary/30 hover:bg-primary/5"
                 } `}
             >

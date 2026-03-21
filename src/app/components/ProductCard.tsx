@@ -104,7 +104,7 @@ export function ProductCard({
                 </span>
               </div>
               <div className="flex items-baseline gap-0.5">
-                <span className="font-white text-sm sm:text-lg text-primary">
+                <span className="font-black text-sm sm:text-lg text-primary">
                   {price}
                 </span>
                 <span className="text-[8px] sm:text-[10px] font-bold text-muted-foreground/40">
@@ -117,7 +117,7 @@ export function ProductCard({
               disabled={isOutOfStock || isMaxStockReached}
               onClick={handleAddToCart}
               whileTap={!(isOutOfStock || isMaxStockReached) ? { scale: 0.97 } : {}}
-              className={`w-full flex items-center justify-center gap-1.5 py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-xl font-black text-[10px] sm:text-xs text-white bg-gradient-to-l transition-all duration-500 shadow-lg group/btn disabled:from-muted disabled:to-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed ${
+              className={`w-full flex items-center justify-center gap-1.5 py-1.5 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-xl font-black text-[9px] sm:text-xs text-white bg-gradient-to-l transition-all duration-500 shadow-lg group/btn disabled:from-muted disabled:to-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed ${
                 isJustAdded 
                   ? "from-emerald-500 to-emerald-600 shadow-emerald-500/20" 
                   : "from-[#c9a85c] to-[#9d7e3a] shadow-[#c9a85c]/20"
@@ -126,7 +126,7 @@ export function ProductCard({
               {isJustAdded ? (
                 <Check className="w-3 h-3 sm:w-4 sm:h-4" />
               ) : (
-                <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover/btn:scale-110" />
+                <ShoppingCart className="w-2.5 h-2.5 sm:w-4 sm:h-4 transition-transform group-hover/btn:scale-110" />
               )}
               <span>
                 {isOutOfStock 

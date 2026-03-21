@@ -105,7 +105,7 @@ export function Header() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <div className="hidden sm:flex items-center gap-2 mr-2">
               <Button
                 variant="ghost"
@@ -127,7 +127,6 @@ export function Header() {
               </Button>
             </div>
 
-            <MobileMenuSheet open={isOpen} onOpenChange={setIsOpen} navLinks={navLinks} isActive={isActive} />
             <CartSheet
               items={items}
               totalItems={totalItems}
@@ -137,6 +136,7 @@ export function Header() {
               removeFromCart={removeFromCart}
               onCheckout={() => setIsCheckoutOpen(true)}
             />
+            <MobileMenuSheet open={isOpen} onOpenChange={setIsOpen} navLinks={navLinks} isActive={isActive} />
           </div>
         </div>
       </div>
