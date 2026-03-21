@@ -1,4 +1,5 @@
-import { ArrowLeft, Sparkles, Play, ShieldCheck, Star, Loader2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Play, ShieldCheck, Star, Loader2, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { motion } from "framer-motion";
 import { APP_NAME } from "@/lib/constants";
@@ -6,10 +7,77 @@ import { homeFeatures } from "@/lib/data/features";
 import { Button } from "../components/ui/button";
 import { ProductCard } from "../components/ProductCard";
 import { useProducts } from "../context/ProductContext";
+import { loadMediaBlob, watchMediaUpdates } from "@/lib/mediaStorage";
 
 export function Home() {
   const { products, loading } = useProducts();
   const featuredProducts = products.filter(p => p.featured);
+  const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [ctaImage, setCtaImage] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
+
+  const DEFAULT_CTA_IMAGE = "https://images.unsplash.com/photo-1555244162-803834f70033?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxncm9jZXJ5JTIwZGVsaXZlcnl8ZW58MXx8fHwxNzcMTMxNjU3OHww&ixlib=rb-4.1.0&q=80&w=1080";
+
+  useEffect(() => {
+    let currentObjectUrls: Record<string, string> = {};
+
+    const loadMedia = async () => {
+      try {
+        const syncMedia = async (key: string, setter: (val: string | null) => void, lsKey: string) => {
+            const b = await loadMediaBlob(key);
+            if (b) {
+                const url = URL.createObjectURL(b);
+                if (currentObjectUrls[key]) URL.revokeObjectURL(currentObjectUrls[key]);
+                currentObjectUrls[key] = url;
+                setter(url);
+            } else {
+                if (currentObjectUrls[key]) URL.revokeObjectURL(currentObjectUrls[key]);
+                delete currentObjectUrls[key];
+                const s = localStorage.getItem(lsKey);
+                if (s && !s.startsWith("blob:")) setter(s);
+                else setter(null);
+            }
+        };
+
+        await syncMedia("heroImage", setHeroImage, "heroImage");
+        await syncMedia("ctaImage", setCtaImage, "ctaImage");
+        await syncMedia("heroVideo", setVideoUrl, "heroVideoUrl");
+
+      } catch (err) {
+        console.error("Failed to load generic media blobs", err);
+      }
+    };
+
+    void loadMedia();
+
+    const unsubscribe = watchMediaUpdates(() => {
+       void loadMedia();
+    });
+
+    const onStorage = (e: StorageEvent) => {
+      // Keep lightweight string updates syncing through localstorage correctly
+      if (e.key === "heroVideoUrl" && e.newValue && !e.newValue.startsWith("blob:")) setVideoUrl(e.newValue);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      unsubscribe();
+      Object.values(currentObjectUrls).forEach(url => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  const isYouTube = (url: string) =>
+    url.includes("youtube.com") || url.includes("youtu.be");
+
+  const getEmbedUrl = (url: string) => {
+    // youtu.be/ID or youtube.com/shorts/ID or youtube.com/watch?v=ID
+    const match = url.match(
+      /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([-\w]+)/
+    );
+    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0`;
+    return url;
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -27,6 +95,7 @@ export function Home() {
   };
 
   return (
+    <>
     <div className="min-h-screen overflow-hidden">
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center pt-20">
@@ -111,25 +180,35 @@ export function Home() {
             >
               <div className="absolute -inset-10 bg-gradient-to-br from-[#c9a85c] to-[#9d7e3a] rounded-full opacity-10 blur-[100px] animate-pulse" />
               <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 group max-w-lg mx-auto">
-                <img
-                  src="https://images.unsplash.com/photo-1680342627018-1cfc75d0597a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBmb29kJTIwcHJvZHVjdHN8ZW58MXx8fHwxNzcMTMxNjU3OHww&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="منتجات فاخرة"
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
+                {heroImage ? (
+                  <img
+                    src={heroImage}
+                    alt="صورة الصفحة الرئيسية - الجوهرة البراقة"
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#c9a85c]/20 via-[#f5f0e8] to-[#9d7e3a]/20 flex flex-col items-center justify-center gap-4">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#c9a85c] to-[#9d7e3a] flex items-center justify-center shadow-xl">
+                      <Sparkles className="w-10 h-10 text-white" />
+                    </div>
+                    <p className="text-[#9d7e3a] font-bold text-sm text-center px-6">ارفع صورة من لوحة التحكم<br/>الإعدادات ← إعدادات المتجر</p>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 <motion.div
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1 }}
-                  className="absolute bottom-4 sm:bottom-8 left-4 right-4 sm:left-8 sm:right-8 p-4 sm:p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20"
+                  onClick={() => videoUrl && setShowVideo(true)}
+                  className={`absolute bottom-4 sm:bottom-8 left-4 right-4 sm:left-8 sm:right-8 p-4 sm:p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 transition-all ${videoUrl ? "cursor-pointer hover:bg-white/20 hover:scale-[1.02]" : "cursor-default opacity-70"}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-lg shadow-black/20 flex-shrink-0">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-lg shadow-black/20 flex-shrink-0 transition-transform ${videoUrl ? "group-hover:scale-110" : ""}`}>
                       <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                     </div>
                     <div>
                       <p className="text-white font-bold text-sm sm:text-base">شاهد منتجاتنا</p>
-                      <p className="text-white/70 text-[10px] sm:text-xs">فيديو ترويجي قصير</p>
+                      <p className="text-white/70 text-[10px] sm:text-xs">{videoUrl ? "اضغط لمشاهدة الفيديو" : "أضف رابط فيديو من الإعدادات"}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -280,7 +359,7 @@ export function Home() {
               </div>
               <div className="relative hidden lg:block overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1555244162-803834f70033?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxncm9jZXJ5JTIwZGVsaXZlcnl8ZW58MXx8fHwxNzcMTMxNjU3OHww&ixlib=rb-4.1.0&q=80&w=1080"
+                  src={ctaImage || DEFAULT_CTA_IMAGE}
                   alt="التوصيل"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[3s] hover:scale-110"
                 />
@@ -291,6 +370,42 @@ export function Home() {
         </div>
       </section>
     </div>
+
+    {/* Video Modal */}
+    {showVideo && videoUrl && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+        onClick={() => setShowVideo(false)}
+      >
+        <button
+          onClick={() => setShowVideo(false)}
+          className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all border border-white/20"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        <div
+          className="w-full max-w-4xl aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {isYouTube(videoUrl!) ? (
+            <iframe
+              src={getEmbedUrl(videoUrl!)}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <video
+              src={videoUrl!}
+              controls
+              autoPlay
+              className="w-full h-full bg-black"
+            />
+          )}
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
