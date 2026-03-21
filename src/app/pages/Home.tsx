@@ -7,7 +7,7 @@ import { homeFeatures } from "@/lib/data/features";
 import { Button } from "../components/ui/button";
 import { ProductCard } from "../components/ProductCard";
 import { useProducts } from "../context/ProductContext";
-import { loadMediaBlob, watchMediaUpdates } from "@/lib/mediaStorage";
+import { fetchStoreSettings } from "@/lib/services/storeSettingsService";
 
 export function Home() {
   const { products, loading } = useProducts();
@@ -20,51 +20,17 @@ export function Home() {
   const DEFAULT_CTA_IMAGE = "https://images.unsplash.com/photo-1555244162-803834f70033?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxncm9jZXJ5JTIwZGVsaXZlcnl8ZW58MXx8fHwxNzcMTMxNjU3OHww&ixlib=rb-4.1.0&q=80&w=1080";
 
   useEffect(() => {
-    let currentObjectUrls: Record<string, string> = {};
-
     const loadMedia = async () => {
       try {
-        const syncMedia = async (key: string, setter: (val: string | null) => void, lsKey: string) => {
-            const b = await loadMediaBlob(key);
-            if (b) {
-                const url = URL.createObjectURL(b);
-                if (currentObjectUrls[key]) URL.revokeObjectURL(currentObjectUrls[key]);
-                currentObjectUrls[key] = url;
-                setter(url);
-            } else {
-                if (currentObjectUrls[key]) URL.revokeObjectURL(currentObjectUrls[key]);
-                delete currentObjectUrls[key];
-                const s = localStorage.getItem(lsKey);
-                if (s && !s.startsWith("blob:")) setter(s);
-                else setter(null);
-            }
-        };
-
-        await syncMedia("heroImage", setHeroImage, "heroImage");
-        await syncMedia("ctaImage", setCtaImage, "ctaImage");
-        await syncMedia("heroVideo", setVideoUrl, "heroVideoUrl");
-
+        const settings = await fetchStoreSettings();
+        if (settings.heroImageUrl) setHeroImage(settings.heroImageUrl);
+        if (settings.ctaImageUrl) setCtaImage(settings.ctaImageUrl);
+        if (settings.heroVideoUrl) setVideoUrl(settings.heroVideoUrl);
       } catch (err) {
-        console.error("Failed to load generic media blobs", err);
+        console.error("Failed to load media from Supabase", err);
       }
     };
-
     void loadMedia();
-
-    const unsubscribe = watchMediaUpdates(() => {
-       void loadMedia();
-    });
-
-    const onStorage = (e: StorageEvent) => {
-      // Keep lightweight string updates syncing through localstorage correctly
-      if (e.key === "heroVideoUrl" && e.newValue && !e.newValue.startsWith("blob:")) setVideoUrl(e.newValue);
-    };
-    window.addEventListener("storage", onStorage);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      unsubscribe();
-      Object.values(currentObjectUrls).forEach(url => URL.revokeObjectURL(url));
-    };
   }, []);
 
   const isYouTube = (url: string) =>

@@ -1,22 +1,33 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Bell, Shield, Palette, Globe, Save, Upload, ImageIcon, Trash2, Video } from "lucide-react";
+import { User, Bell, Shield, Palette, Globe, Save, Upload, ImageIcon, Trash2, Video, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { fetchStoreSettings, updateDeliveryPrice } from "@/lib/services/storeSettingsService";
-import { saveMediaBlob, loadMediaBlob, deleteMediaBlob } from "@/lib/mediaStorage";
+import { uploadMedia, deleteMedia, saveMediaUrl } from "@/lib/mediaStorage";
 
 export function DashboardSettings() {
     const [activeTab, setActiveTab] = useState("profile");
     const [deliveryPrice, setDeliveryPrice] = useState("5000");
     const [savedNotice, setSavedNotice] = useState(false);
+
+    // Hero image
     const [heroImage, setHeroImage] = useState<string | null>(null);
     const [heroImageName, setHeroImageName] = useState<string>("");
+    const [heroImageUploading, setHeroImageUploading] = useState(false);
+
+    // CTA image
     const [ctaImage, setCtaImage] = useState<string | null>(null);
     const [ctaImageName, setCtaImageName] = useState<string>("");
+    const [ctaImageUploading, setCtaImageUploading] = useState(false);
+
     const [uploadError, setUploadError] = useState<string | null>(null);
+
+    // Hero video
     const [heroVideoUrl, setHeroVideoUrl] = useState("");
-    const [videoFileName, setVideoFileName] = useState("");
-    const [videoObjectUrl, setVideoObjectUrl] = useState<string | null>(null);
     const [videoMode, setVideoMode] = useState<"url" | "file">("url");
+    const [videoFileName, setVideoFileName] = useState("");
+    const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+    const [videoUploading, setVideoUploading] = useState(false);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const ctaFileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
@@ -25,53 +36,31 @@ export function DashboardSettings() {
         const loadSettings = async () => {
             const settings = await fetchStoreSettings();
             setDeliveryPrice(String(settings.deliveryPrice));
+
+            // Load media URLs from Supabase (visible to all users)
+            if (settings.heroImageUrl) setHeroImage(settings.heroImageUrl);
+            if (settings.ctaImageUrl) setCtaImage(settings.ctaImageUrl);
+            if (settings.heroVideoUrl) {
+                if (settings.heroVideoUrl.startsWith("http") &&
+                    (settings.heroVideoUrl.includes("youtube") ||
+                        settings.heroVideoUrl.includes("youtu.be"))) {
+                    setHeroVideoUrl(settings.heroVideoUrl);
+                    setVideoMode("url");
+                } else {
+                    setVideoPreviewUrl(settings.heroVideoUrl);
+                    setVideoMode("file");
+                }
+            }
         };
         void loadSettings();
-
-        // Load media asynchronously
-        loadMediaBlob("heroImage").then(blob => {
-            if (blob) setHeroImage(URL.createObjectURL(blob));
-            else {
-                const s = localStorage.getItem("heroImage");
-                if (s && !s.startsWith("blob:")) setHeroImage(s);
-            }
-        });
-
-        loadMediaBlob("ctaImage").then(blob => {
-            if (blob) setCtaImage(URL.createObjectURL(blob));
-            else {
-                const s = localStorage.getItem("ctaImage");
-                if (s && !s.startsWith("blob:")) setCtaImage(s);
-            }
-        });
-
-        const savedVideo = localStorage.getItem("heroVideoUrl");
-        if (savedVideo && !savedVideo.startsWith("blob:")) { setHeroVideoUrl(savedVideo); setVideoMode("url"); }
-        
-        loadMediaBlob("heroVideo").then((blob) => {
-            if (blob) {
-                setVideoObjectUrl(URL.createObjectURL(blob));
-                if (localStorage.getItem("heroVideoName")) setVideoMode("file");
-            }
-        });
-
-        const savedName = localStorage.getItem("heroImageName");
-        if (savedName) setHeroImageName(savedName);
-        const savedCtaName = localStorage.getItem("ctaImageName");
-        if (savedCtaName) setCtaImageName(savedCtaName);
-        const savedVideoName = localStorage.getItem("heroVideoName");
-        if (savedVideoName) setVideoFileName(savedVideoName);
     }, []);
 
     const handleSave = async () => {
         try {
             await updateDeliveryPrice(Number(deliveryPrice));
+            // Save YouTube URL if in URL mode
             if (videoMode === "url") {
-                if (heroVideoUrl.trim()) {
-                    localStorage.setItem("heroVideoUrl", heroVideoUrl.trim());
-                } else {
-                    localStorage.removeItem("heroVideoUrl");
-                }
+                await saveMediaUrl("heroVideo", heroVideoUrl.trim() || null);
             }
             setSavedNotice(true);
             setTimeout(() => setSavedNotice(false), 3000);
@@ -92,29 +81,32 @@ export function DashboardSettings() {
             setUploadError("حجم الصورة كبير جداً. الحد الأقصى 5 ميغابايت.");
             return;
         }
-        
+
+        setHeroImageUploading(true);
         try {
-            await saveMediaBlob("heroImage", file);
+            const url = await uploadMedia("heroImage", file);
+            await saveMediaUrl("heroImage", url);
+            setHeroImage(url);
             setHeroImageName(file.name);
-            localStorage.setItem("heroImageName", file.name);
-            const blob = await loadMediaBlob("heroImage");
-            if (blob) {
-                if (heroImage && heroImage.startsWith("blob:")) URL.revokeObjectURL(heroImage);
-                setHeroImage(URL.createObjectURL(blob));
-            }
-        } catch (err) {
-            setUploadError("حدث خطأ أثناء حفظ الصورة. ربما تم تجاوز سعة التخزين.");
+        } catch {
+            setUploadError("حدث خطأ أثناء رفع الصورة إلى السيرفر. تأكد من إعدادات Supabase Storage.");
+        } finally {
+            setHeroImageUploading(false);
         }
     };
 
-    const handleRemoveImage = () => {
-        if (heroImage && heroImage.startsWith("blob:")) URL.revokeObjectURL(heroImage);
-        setHeroImage(null);
-        setHeroImageName("");
-        localStorage.removeItem("heroImage");
-        localStorage.removeItem("heroImageName");
-        void deleteMediaBlob("heroImage");
-        if (fileInputRef.current) fileInputRef.current.value = "";
+    const handleRemoveImage = async () => {
+        setHeroImageUploading(true);
+        try {
+            await deleteMedia("heroImage");
+            setHeroImage(null);
+            setHeroImageName("");
+        } catch {
+            // silently ignore
+        } finally {
+            setHeroImageUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
     };
 
     const handleCtaImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,29 +121,32 @@ export function DashboardSettings() {
             setUploadError("حجم الصورة كبير جداً. الحد الأقصى 5 ميغابايت.");
             return;
         }
-        
+
+        setCtaImageUploading(true);
         try {
-            await saveMediaBlob("ctaImage", file);
+            const url = await uploadMedia("ctaImage", file);
+            await saveMediaUrl("ctaImage", url);
+            setCtaImage(url);
             setCtaImageName(file.name);
-            localStorage.setItem("ctaImageName", file.name);
-            const blob = await loadMediaBlob("ctaImage");
-            if (blob) {
-                if (ctaImage && ctaImage.startsWith("blob:")) URL.revokeObjectURL(ctaImage);
-                setCtaImage(URL.createObjectURL(blob));
-            }
-        } catch (err) {
-            setUploadError("حدث خطأ أثناء حفظ الصورة. ربما تم تجاوز سعة التخزين.");
+        } catch {
+            setUploadError("حدث خطأ أثناء رفع صورة CTA إلى السيرفر.");
+        } finally {
+            setCtaImageUploading(false);
         }
     };
 
-    const handleRemoveCtaImage = () => {
-        if (ctaImage && ctaImage.startsWith("blob:")) URL.revokeObjectURL(ctaImage);
-        setCtaImage(null);
-        setCtaImageName("");
-        localStorage.removeItem("ctaImage");
-        localStorage.removeItem("ctaImageName");
-        void deleteMediaBlob("ctaImage");
-        if (ctaFileInputRef.current) ctaFileInputRef.current.value = "";
+    const handleRemoveCtaImage = async () => {
+        setCtaImageUploading(true);
+        try {
+            await deleteMedia("ctaImage");
+            setCtaImage(null);
+            setCtaImageName("");
+        } catch {
+            // silently ignore
+        } finally {
+            setCtaImageUploading(false);
+            if (ctaFileInputRef.current) ctaFileInputRef.current.value = "";
+        }
     };
 
     const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,29 +157,41 @@ export function DashboardSettings() {
             return;
         }
         setUploadError(null);
-        if (videoObjectUrl) URL.revokeObjectURL(videoObjectUrl);
-        setVideoFileName(file.name);
+        setVideoUploading(true);
         setVideoMode("file");
-        localStorage.setItem("heroVideoName", file.name);
-        
-        await saveMediaBlob("heroVideo", file);
-        const blob = await loadMediaBlob("heroVideo");
-        if (blob) {
-            const freshUrl = URL.createObjectURL(blob);
-            setVideoObjectUrl(freshUrl);
+        setVideoFileName(file.name);
+        // Show local preview immediately while uploading
+        const localUrl = URL.createObjectURL(file);
+        setVideoPreviewUrl(localUrl);
+
+        try {
+            const url = await uploadMedia("heroVideo", file);
+            await saveMediaUrl("heroVideo", url);
+            URL.revokeObjectURL(localUrl);
+            setVideoPreviewUrl(url);
+        } catch {
+            setUploadError("حدث خطأ أثناء رفع الفيديو. تأكد من إعدادات Supabase Storage.");
+            setVideoPreviewUrl(null);
+        } finally {
+            setVideoUploading(false);
         }
     };
 
     const handleRemoveVideo = async () => {
-        if (videoObjectUrl) URL.revokeObjectURL(videoObjectUrl);
-        setVideoObjectUrl(null);
-        setVideoFileName("");
-        setHeroVideoUrl("");
-        localStorage.removeItem("heroVideoUrl");
-        localStorage.removeItem("heroVideoName");
-        await deleteMediaBlob("heroVideo");
-        if (videoInputRef.current) videoInputRef.current.value = "";
+        setVideoUploading(true);
+        try {
+            await deleteMedia("heroVideo");
+            setVideoPreviewUrl(null);
+            setVideoFileName("");
+            setHeroVideoUrl("");
+        } catch {
+            // silently ignore
+        } finally {
+            setVideoUploading(false);
+            if (videoInputRef.current) videoInputRef.current.value = "";
+        }
     };
+
     return (
         <div className="space-y-6">
             <div>
@@ -236,27 +243,15 @@ export function DashboardSettings() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border/50">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">الاسم الكامل</label>
-                                        <input
-                                            type="text"
-                                            defaultValue="أدمن المتجر"
-                                            className="w-full bg-muted/30 border border-border/50 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                        />
+                                        <input type="text" defaultValue="أدمن المتجر" className="w-full bg-muted/30 border border-border/50 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none font-medium" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">البريد الإلكتروني</label>
-                                        <input
-                                            type="email"
-                                            defaultValue="admin@shakastore.com"
-                                            className="w-full bg-muted/30 border border-border/50 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                        />
+                                        <input type="email" defaultValue="admin@shakastore.com" className="w-full bg-muted/30 border border-border/50 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none font-medium" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">رقم الهاتف</label>
-                                        <input
-                                            type="tel"
-                                            defaultValue="07701234567"
-                                            className="w-full bg-muted/30 border border-border/50 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                        />
+                                        <input type="tel" defaultValue="07701234567" className="w-full bg-muted/30 border border-border/50 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none font-medium" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">اللغة الافتراضية</label>
@@ -288,33 +283,31 @@ export function DashboardSettings() {
                                 <div className="space-y-4 pt-6 border-t border-border/50">
                                     <div>
                                         <label className="text-xs font-bold text-primary uppercase tracking-wider">فيديو الصفحة الرئيسية</label>
-                                        <p className="text-xs text-muted-foreground mt-1">يُفعّل زر التشغيل ℔︎ في الصفحة الرئيسية</p>
+                                        <p className="text-xs text-muted-foreground mt-1">يُفعّل زر التشغيل في الصفحة الرئيسية</p>
                                     </div>
                                     {/* Mode Tabs */}
                                     <div className="flex gap-2">
                                         <button type="button" onClick={() => setVideoMode("file")}
-                                            className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold border transition-all ${
-                                                videoMode === "file"
-                                                    ? "bg-primary text-primary-foreground border-primary shadow"
-                                                    : "border-border/50 text-muted-foreground hover:bg-muted"
-                                            }`}>
+                                            className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold border transition-all ${videoMode === "file"
+                                                ? "bg-primary text-primary-foreground border-primary shadow"
+                                                : "border-border/50 text-muted-foreground hover:bg-muted"
+                                                }`}>
                                             رفع من الجهاز
                                         </button>
                                         <button type="button" onClick={() => setVideoMode("url")}
-                                            className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold border transition-all ${
-                                                videoMode === "url"
-                                                    ? "bg-primary text-primary-foreground border-primary shadow"
-                                                    : "border-border/50 text-muted-foreground hover:bg-muted"
-                                            }`}>
+                                            className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold border transition-all ${videoMode === "url"
+                                                ? "bg-primary text-primary-foreground border-primary shadow"
+                                                : "border-border/50 text-muted-foreground hover:bg-muted"
+                                                }`}>
                                             رابط YouTube
                                         </button>
                                     </div>
 
                                     {videoMode === "file" ? (
-                                        videoObjectUrl ? (
+                                        videoPreviewUrl ? (
                                             <div className="space-y-3">
                                                 <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow bg-black">
-                                                    <video src={videoObjectUrl} controls className="w-full max-h-48 object-contain" />
+                                                    <video src={videoPreviewUrl} controls className="w-full max-h-48 object-contain" />
                                                     <div className="absolute bottom-2 left-2 right-2">
                                                         <p className="text-white text-xs font-bold truncate bg-black/50 rounded-lg px-2 py-1">{videoFileName}</p>
                                                     </div>
@@ -322,11 +315,14 @@ export function DashboardSettings() {
                                                 <div className="flex gap-3">
                                                     <Button type="button" variant="outline" size="sm"
                                                         onClick={() => videoInputRef.current?.click()}
+                                                        disabled={videoUploading}
                                                         className="rounded-xl border-primary/20 hover:bg-primary/5 gap-2 font-bold">
-                                                        <Upload className="w-4 h-4" />تغيير
+                                                        {videoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                                        تغيير
                                                     </Button>
                                                     <Button type="button" variant="ghost" size="sm"
                                                         onClick={() => void handleRemoveVideo()}
+                                                        disabled={videoUploading}
                                                         className="rounded-xl text-destructive hover:bg-destructive/5 gap-2 font-bold">
                                                         <Trash2 className="w-4 h-4" />حذف
                                                     </Button>
@@ -334,17 +330,20 @@ export function DashboardSettings() {
                                             </div>
                                         ) : (
                                             <button type="button" onClick={() => videoInputRef.current?.click()}
+                                                disabled={videoUploading}
                                                 className="w-full py-10 border-2 border-dashed border-primary/30 rounded-2xl flex flex-col items-center gap-3 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer group">
                                                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                                                    <Video className="w-7 h-7 text-primary" />
+                                                    {videoUploading ? <Loader2 className="w-7 h-7 text-primary animate-spin" /> : <Video className="w-7 h-7 text-primary" />}
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="font-bold text-sm">اضغط لرفع فيديو</p>
+                                                    <p className="font-bold text-sm">{videoUploading ? "جاري الرفع..." : "اضغط لرفع فيديو"}</p>
                                                     <p className="text-xs text-muted-foreground">MP4, MOV, WEBM</p>
                                                 </div>
-                                                <div className="flex items-center gap-2 bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white px-6 py-2 rounded-xl text-sm font-bold shadow">
-                                                    <Upload className="w-4 h-4" />اختر فيديو
-                                                </div>
+                                                {!videoUploading && (
+                                                    <div className="flex items-center gap-2 bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white px-6 py-2 rounded-xl text-sm font-bold shadow">
+                                                        <Upload className="w-4 h-4" />اختر فيديو
+                                                    </div>
+                                                )}
                                             </button>
                                         )
                                     ) : (
@@ -373,62 +372,50 @@ export function DashboardSettings() {
                                 <div className="space-y-4 pt-6 border-t border-border/50">
                                     <div>
                                         <label className="text-xs font-bold text-primary uppercase tracking-wider">صورة الصفحة الرئيسية</label>
-                                        <p className="text-xs text-muted-foreground mt-1">ارفع صورة تظهر في القسم الرئيسي للموقع. (الحد الأقصى 5MB)</p>
+                                        <p className="text-xs text-muted-foreground mt-1">ارفع صورة تظهر في القسم الرئيسي للموقع لجميع الزوار. (الحد الأقصى 5MB)</p>
                                     </div>
 
                                     {heroImage ? (
                                         <div className="space-y-3">
                                             <div className="relative w-full max-w-xs aspect-[4/5] rounded-2xl overflow-hidden border-2 border-primary/30 shadow-lg">
-                                                <img
-                                                    src={heroImage}
-                                                    alt="معاينة الصورة الرئيسية"
-                                                    className="w-full h-full object-cover"
-                                                />
+                                                <img src={heroImage} alt="معاينة الصورة الرئيسية" className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                                                 <div className="absolute bottom-3 left-3 right-3">
-                                                    <p className="text-white text-xs font-bold truncate bg-black/30 rounded-lg px-2 py-1">{heroImageName}</p>
+                                                    <p className="text-white text-xs font-bold truncate bg-black/30 rounded-lg px-2 py-1">{heroImageName || "صورة محفوظة"}</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-3">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
+                                                <Button type="button" variant="outline" size="sm"
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="rounded-xl border-primary/20 hover:bg-primary/5 gap-2 font-bold"
-                                                >
-                                                    <Upload className="w-4 h-4" />
+                                                    disabled={heroImageUploading}
+                                                    className="rounded-xl border-primary/20 hover:bg-primary/5 gap-2 font-bold">
+                                                    {heroImageUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                     تغيير الصورة
                                                 </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={handleRemoveImage}
-                                                    className="rounded-xl text-destructive hover:bg-destructive/5 gap-2 font-bold"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                    حذف الصورة
+                                                <Button type="button" variant="ghost" size="sm"
+                                                    onClick={() => void handleRemoveImage()}
+                                                    disabled={heroImageUploading}
+                                                    className="rounded-xl text-destructive hover:bg-destructive/5 gap-2 font-bold">
+                                                    <Trash2 className="w-4 h-4" />حذف الصورة
                                                 </Button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="w-full max-w-xs aspect-[4/5] border-2 border-dashed border-primary/30 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer group"
-                                        >
+                                        <button type="button" onClick={() => fileInputRef.current?.click()}
+                                            disabled={heroImageUploading}
+                                            className="w-full max-w-xs aspect-[4/5] border-2 border-dashed border-primary/30 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer group">
                                             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                                                <ImageIcon className="w-8 h-8 text-primary" />
+                                                {heroImageUploading ? <Loader2 className="w-8 h-8 text-primary animate-spin" /> : <ImageIcon className="w-8 h-8 text-primary" />}
                                             </div>
                                             <div className="text-center px-4">
-                                                <p className="font-bold text-sm">اضغط لرفع صورة</p>
+                                                <p className="font-bold text-sm">{heroImageUploading ? "جاري الرفع..." : "اضغط لرفع صورة"}</p>
                                                 <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP</p>
                                             </div>
-                                            <div className="flex items-center gap-2 bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
-                                                <Upload className="w-4 h-4" />
-                                                اختر صورة
-                                            </div>
+                                            {!heroImageUploading && (
+                                                <div className="flex items-center gap-2 bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
+                                                    <Upload className="w-4 h-4" />اختر صورة
+                                                </div>
+                                            )}
                                         </button>
                                     )}
 
@@ -436,85 +423,65 @@ export function DashboardSettings() {
                                         <p className="text-sm font-bold text-destructive bg-destructive/10 px-4 py-3 rounded-xl">{uploadError}</p>
                                     )}
 
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        className="hidden"
-                                    />
+                                    <input ref={fileInputRef} type="file" accept="image/*"
+                                        onChange={(e) => void handleImageUpload(e)}
+                                        className="hidden" />
                                 </div>
 
                                 {/* CTA Image Upload */}
                                 <div className="space-y-4 pt-6 border-t border-border/50">
                                     <div>
                                         <label className="text-xs font-bold text-primary uppercase tracking-wider">صورة قسم الدعوة (CTA)</label>
-                                        <p className="text-xs text-muted-foreground mt-1">ارفع صورة تظهر في قسم "دعوة العمل" أسفل الصفحة. (الحد الأقصى 5MB)</p>
+                                        <p className="text-xs text-muted-foreground mt-1">ارفع صورة تظهر في قسم "دعوة العمل" أسفل الصفحة لجميع الزوار. (الحد الأقصى 5MB)</p>
                                     </div>
 
                                     {ctaImage ? (
                                         <div className="space-y-3">
                                             <div className="relative w-full max-w-xs aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-lg bg-muted">
-                                                <img
-                                                    src={ctaImage}
-                                                    alt="معاينة صورة CTA"
-                                                    className="w-full h-full object-cover"
-                                                />
+                                                <img src={ctaImage} alt="معاينة صورة CTA" className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                                                 <div className="absolute bottom-3 left-3 right-3">
-                                                    <p className="text-white text-xs font-bold truncate bg-black/30 rounded-lg px-2 py-1">{ctaImageName}</p>
+                                                    <p className="text-white text-xs font-bold truncate bg-black/30 rounded-lg px-2 py-1">{ctaImageName || "صورة محفوظة"}</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-3">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
+                                                <Button type="button" variant="outline" size="sm"
                                                     onClick={() => ctaFileInputRef.current?.click()}
-                                                    className="rounded-xl border-primary/20 hover:bg-primary/5 gap-2 font-bold"
-                                                >
-                                                    <Upload className="w-4 h-4" />
+                                                    disabled={ctaImageUploading}
+                                                    className="rounded-xl border-primary/20 hover:bg-primary/5 gap-2 font-bold">
+                                                    {ctaImageUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                     تغيير الصورة
                                                 </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={handleRemoveCtaImage}
-                                                    className="rounded-xl text-destructive hover:bg-destructive/5 gap-2 font-bold"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                    حذف الصورة
+                                                <Button type="button" variant="ghost" size="sm"
+                                                    onClick={() => void handleRemoveCtaImage()}
+                                                    disabled={ctaImageUploading}
+                                                    className="rounded-xl text-destructive hover:bg-destructive/5 gap-2 font-bold">
+                                                    <Trash2 className="w-4 h-4" />حذف الصورة
                                                 </Button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => ctaFileInputRef.current?.click()}
-                                            className="w-full max-w-xs aspect-video border-2 border-dashed border-primary/30 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer group"
-                                        >
+                                        <button type="button" onClick={() => ctaFileInputRef.current?.click()}
+                                            disabled={ctaImageUploading}
+                                            className="w-full max-w-xs aspect-video border-2 border-dashed border-primary/30 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer group">
                                             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                                                <ImageIcon className="w-8 h-8 text-primary" />
+                                                {ctaImageUploading ? <Loader2 className="w-8 h-8 text-primary animate-spin" /> : <ImageIcon className="w-8 h-8 text-primary" />}
                                             </div>
                                             <div className="text-center px-4">
-                                                <p className="font-bold text-sm">اضغط لرفع صورة</p>
+                                                <p className="font-bold text-sm">{ctaImageUploading ? "جاري الرفع..." : "اضغط لرفع صورة"}</p>
                                                 <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP</p>
                                             </div>
-                                            <div className="flex items-center gap-2 bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
-                                                <Upload className="w-4 h-4" />
-                                                اختر صورة
-                                            </div>
+                                            {!ctaImageUploading && (
+                                                <div className="flex items-center gap-2 bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
+                                                    <Upload className="w-4 h-4" />اختر صورة
+                                                </div>
+                                            )}
                                         </button>
                                     )}
 
-                                    <input
-                                        ref={ctaFileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleCtaImageUpload}
-                                        className="hidden"
-                                    />
+                                    <input ref={ctaFileInputRef} type="file" accept="image/*"
+                                        onChange={(e) => void handleCtaImageUpload(e)}
+                                        className="hidden" />
                                 </div>
                             </div>
                         )}
@@ -532,8 +499,8 @@ export function DashboardSettings() {
                                 {savedNotice && (
                                     <span className="text-sm font-bold text-emerald-500">تم حفظ الإعدادات بنجاح! ✓</span>
                                 )}
-                                <Button 
-                                    onClick={handleSave}
+                                <Button
+                                    onClick={() => void handleSave()}
                                     className="bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] text-white px-8 h-12 rounded-xl font-bold gap-2 shadow-lg shadow-primary/20"
                                 >
                                     <Save className="w-4 h-4" />
