@@ -288,48 +288,163 @@ export function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Official Distributor Section */}
       <section className="py-12 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#c9a85c]/10 via-background to-[#9d7e3a]/10" />
+        {/* Decorative floating elements */}
+        <motion.div
+          animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-20 left-10 w-20 h-20 rounded-full bg-gradient-to-br from-[#c9a85c]/20 to-transparent blur-xl hidden md:block"
+        />
+        <motion.div
+          animate={{ y: [0, 15, 0], rotate: [0, -5, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-gradient-to-br from-[#9d7e3a]/15 to-transparent blur-xl hidden md:block"
+        />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="max-w-5xl mx-auto rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-card border border-border/50 shadow-2xl"
+            className="max-w-5xl mx-auto rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-card border border-border/50 shadow-2xl relative"
           >
+            {/* Corner decorative accents */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-[#c9a85c]/10 to-transparent rounded-bl-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-[#9d7e3a]/10 to-transparent rounded-tr-full pointer-events-none" />
+
             <div className="grid lg:grid-cols-2">
-              <div className="p-8 md:p-16 space-y-6 md:space-y-8 flex flex-col justify-center text-center lg:text-right">
-                <h2 className="text-3xl md:text-5xl font-black leading-tight">
-                  انضم إلى عالمنا
+              <div className="p-8 md:p-16 space-y-6 md:space-y-8 flex flex-col justify-center items-center lg:items-end text-center lg:text-right relative">
+                {/* Official badge */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+                  whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="relative"
+                >
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-[#c9a85c] to-[#9d7e3a] flex items-center justify-center shadow-xl shadow-[#c9a85c]/30 relative">
+                    <ShieldCheck className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                    {/* Animated ring */}
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-[-4px] rounded-full border-2 border-dashed border-[#c9a85c]/40"
+                    />
+                  </div>
+                  {/* Sparkle decorations */}
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute -top-1 -right-1"
+                  >
+                    <Sparkles className="w-5 h-5 text-[#c9a85c]" />
+                  </motion.div>
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
+                    className="absolute -bottom-1 -left-1"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#9d7e3a]" />
+                  </motion.div>
+                </motion.div>
+
+                {/* Subtitle badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-l from-[#c9a85c]/15 to-[#9d7e3a]/15 border border-[#c9a85c]/25"
+                >
+                  <Star className="w-4 h-4 text-[#c9a85c] fill-current" />
+                  <span className="text-xs md:text-sm font-bold text-[#9d7e3a] tracking-wide">وكيل معتمد رسمياً</span>
+                  <Star className="w-4 h-4 text-[#c9a85c] fill-current" />
+                </motion.div>
+
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="text-3xl md:text-5xl font-black leading-tight"
+                >
+                  الجوهرة البراقة
                   <br />
-                  <span className="text-primary tracking-tight">واحصل على عروض حصرية</span>
-                </h2>
-                <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                  كن أول من يعرف عن منتجاتنا الجديدة وخصوماتنا الحصرية التي تصل إلى 30% للمشتركين فقط.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <input
-                    type="email"
-                    placeholder="بريدك الإلكتروني"
-                    className="flex-1 px-6 py-4 rounded-2xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-right"
-                  />
-                  <Button className="bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white px-10 py-4 h-auto rounded-2xl font-bold transition-all shadow-lg shadow-primary/20">
-                    اشترك الآن
-                  </Button>
-                </div>
-                <div className="flex items-center justify-center lg:justify-start gap-4 text-sm text-muted-foreground">
-                  <ShieldCheck className="w-5 h-5 text-primary flex-shrink-0" />
-                  بياناتك آمنة معنا بنسبة 100%
-                </div>
+                  <span className="bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] bg-clip-text text-transparent tracking-tight">
+                    الوكيل الحصري في العراق
+                  </span>
+                </motion.h2>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 }}
+                  className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-md"
+                >
+                  نحن الوكيل الرسمي والحصري لعصائر <strong className="text-foreground">شوباشوبس (Chupa Chups)</strong> في جمهورية العراق. نضمن لكم منتجات أصلية 100% بجودة عالمية وأسعار تنافسية.
+                </motion.p>
+
+                {/* Trust indicators */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                  className="flex flex-wrap justify-center lg:justify-end gap-4"
+                >
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <ShieldCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="text-xs font-bold text-green-600">منتجات أصلية 100%</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#c9a85c]/10 border border-[#c9a85c]/20">
+                    <Star className="w-4 h-4 text-[#c9a85c] fill-current flex-shrink-0" />
+                    <span className="text-xs font-bold text-[#9d7e3a]">جودة عالمية</span>
+                  </div>
+                </motion.div>
+
+                {/* CTA Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Link to="/products">
+                    <Button className="bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white px-10 py-4 h-auto rounded-2xl font-bold transition-all shadow-lg shadow-primary/20 group">
+                      تصفح منتجات شوباشوبس
+                      <ArrowLeft className="w-5 h-5 mr-2 rotate-180 group-hover:-translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
+                </motion.div>
               </div>
+
               <div className="relative hidden lg:block overflow-hidden">
                 <img
                   src={ctaImage || DEFAULT_CTA_IMAGE}
-                  alt="التوصيل"
+                  alt="Chupa Chups - الوكيل الحصري في العراق"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[3s] hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-card to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-card via-card/30 to-transparent" />
+                {/* Overlay badge on image */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.8 }}
+                  className="absolute bottom-8 left-8 right-8 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c9a85c] to-[#9d7e3a] flex items-center justify-center flex-shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm">Official Distributor</p>
+                      <p className="text-white/70 text-xs">Chupa Chups Beverages — Iraq</p>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>

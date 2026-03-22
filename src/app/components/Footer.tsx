@@ -27,7 +27,7 @@ export function Footer() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(201,168,92,0.05),transparent_50%)]" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-16 mb-12 md:mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-16 mb-12 md:mb-20">
           <div className="space-y-6 md:space-y-8 text-center sm:text-right">
             <Link to="/" className="flex items-center justify-center sm:justify-start gap-2 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c9a85c] to-[#9d7e3a] flex items-center justify-center shadow-lg shadow-primary/20 group-hover:rotate-12 transition-transform">
@@ -83,42 +83,23 @@ export function Footer() {
                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-5 h-5 text-primary" />
                 </div>
-                <span className="text-sm md:text-base">بغداد، حي المنصور، العراق</span>
+                <span className="text-sm md:text-base">شركة الجوهرة البراقة</span>
               </li>
               <li className="flex flex-col sm:flex-row items-center sm:items-start gap-3 md:gap-4 text-muted-foreground">
                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center flex-shrink-0">
                   <Phone className="w-5 h-5 text-primary" />
                 </div>
-                <span dir="ltr" className="text-sm md:text-base">+964 780 123 4567</span>
+                <span dir="ltr" className="text-sm md:text-base">07882000260 - 07882000250</span>
               </li>
               <li className="flex flex-col sm:flex-row items-center sm:items-start gap-3 md:gap-4 text-muted-foreground">
                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center flex-shrink-0">
                   <Mail className="w-5 h-5 text-primary" />
                 </div>
-                <span className="text-sm md:text-base">info@shakastore.iq</span>
+                <span className="text-sm md:text-base">aljawharaalbaraqa41@gmail.com</span>
               </li>
             </ul>
           </div>
 
-          <div className="space-y-6 md:space-y-8 text-center sm:text-right">
-            <h3 className="text-lg md:text-xl font-bold mb-6 md:mb-8 flex items-center justify-center sm:justify-start gap-3">
-              <span className="w-8 h-1 bg-primary rounded-full hidden sm:block" />
-              النشرة البريدية
-            </h3>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              اشترك للحصول على آخر العروض والمنتجات الجديدة.
-            </p>
-            <div className="flex flex-col gap-3">
-              <input
-                type="email"
-                placeholder="بريدك الإلكتروني"
-                className="w-full h-11 md:h-12 px-4 rounded-xl border border-border/50 bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-right text-sm md:text-base"
-              />
-              <Button className="w-full bg-gradient-to-l from-[#c9a85c] to-[#9d7e3a] hover:from-[#9d7e3a] hover:to-[#c9a85c] text-white rounded-xl shadow-lg shadow-primary/20 h-11 md:h-12">
-                اشتراك
-              </Button>
-            </div>
-          </div>
         </div>
 
         <div className="pt-8 md:pt-12 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">

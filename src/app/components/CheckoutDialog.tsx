@@ -295,7 +295,7 @@ export function CheckoutDialog({ open, onOpenChange, items, totalPrice, onSucces
                                         <textarea
                                             required
                                             rows={2}
-                                            placeholder="مثال: حي المنصور، شارع 14، بجانب..."
+                                            placeholder="مثال: جميلة، شارع 14، بجانب..."
                                             value={address}
                                             onChange={(e) => {
                                                 setAddress(e.target.value);
